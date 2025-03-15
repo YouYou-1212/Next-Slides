@@ -24,6 +24,14 @@
   
   
 
+## 系统截图
+
+![](https://github.com/YouYou-1212/Next-Slides/blob/main/pic/Snipaste_2025-03-15_17-28-23.png)
+
+![](https://github.com/YouYou-1212/Next-Slides/blob/main/pic/Snipaste_2025-03-15_17-28-09.png)
+
+![](https://github.com/YouYou-1212/Next-Slides/blob/main/pic/Snipaste_2025-03-15_17-28-41.png)
+
 快速开始
 ----
 
@@ -48,21 +56,15 @@ yarn installt
 yarn dev
 ```
 
-
-
 贡献指南
 ----
 
 我们欢迎任何形式的贡献！请阅读 [CONTRIBUTING.md](https://contributing.md/) 了解如何参与项目开发。
 
-
-
 许可证
 ---
 
 本项目采用 [MIT 许可证](https://license/)。
-
-
 
 联系方式
 ----
