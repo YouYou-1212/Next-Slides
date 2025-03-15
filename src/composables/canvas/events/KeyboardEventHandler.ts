@@ -52,32 +52,34 @@ export class KeyboardEventHandler {
     }
   }
 
-  // 处理系统剪贴板粘贴
-  private handleClipboardPaste(e: ClipboardEvent) {
-    console.log("handleClipboardPaste 粘贴事件触发");
-    // 检查剪贴板中是否有图片数据
-    if (e.clipboardData && e.clipboardData.items) {
-      const items = e.clipboardData.items;
-      let hasProcessed = false;
+  // // 处理系统剪贴板粘贴
+  // private handleClipboardPaste(e: ClipboardEvent) {
+  //   console.log("handleClipboardPaste 粘贴事件触发");
+  //   // 检查剪贴板中是否有图片数据
+  //   if (e.clipboardData && e.clipboardData.items) {
+  //     const items = e.clipboardData.items;
+  //     let hasProcessed = false;
 
-      for (let i = 0; i < items.length; i++) {
-        // 检查是否为图片类型
-        if (items[i].type.indexOf("image") !== -1) {
-          const blob = items[i].getAsFile();
-          if (blob) {
-            // 阻止默认行为
-            e.preventDefault();
-            // 将Blob转换为URL
-            const imageUrl = URL.createObjectURL(blob);
-            // 粘贴图片到画布
-            this.pasteImageFromUrl(imageUrl);
-            hasProcessed = true;
-            break; // 只处理第一个图片
-          }
-        }
-      }
-    }
-  }
+  //     for (let i = 0; i < items.length; i++) {
+  //       // 检查是否为图片类型
+  //       if (items[i].type.indexOf("image") !== -1) {
+  //         const blob = items[i].getAsFile();
+  //         if (blob) {
+  //           // 阻止默认行为
+  //           e.preventDefault();
+  //           // 将Blob转换为URL
+  //           const imageUrl = URL.createObjectURL(blob);
+  //           // 粘贴图片到画布
+  //           this.pasteImageFromUrl(imageUrl);
+  //           hasProcessed = true;
+  //           break; // 只处理第一个图片
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+
+
   // 从URL粘贴图片到画布
   private pasteImageFromUrl(url: string) {
     console.log("从URL粘贴图片到画布", url);
@@ -115,15 +117,25 @@ export class KeyboardEventHandler {
   private handleCopyPaste(e: KeyboardEvent) {
     // 检查是否按下了Ctrl键
     if (e.ctrlKey) {
+      // 检查是否有文本框在编辑状态
+      const activeObject = this.canvas.getActiveObject();
+      const isTextEditing = activeObject && 'isEditing' in activeObject && (activeObject as any).isEditing;
+      
+      // 如果文本框在编辑状态，不干扰默认行为
+      if (isTextEditing) {
+        return;
+      }
+      
       // 复制操作 (Ctrl+C)
       if (e.code === "KeyC") {
+        e.preventDefault();
+        e.stopPropagation();
         this.handleCopy();
       }
       //粘贴操作 (Ctrl+V)
       else if (e.code === "KeyV") {
-        // 阻止默认行为，以便我们可以自定义处理
         e.preventDefault();
-        // 检查系统剪贴板
+        e.stopPropagation();
         this.checkClipboardAndPaste();
       }
     }
@@ -132,7 +144,6 @@ export class KeyboardEventHandler {
   // 处理复制操作
   private handleCopy() {
     const activeObject = this.canvas.getActiveObject();
-
     // 确保有选中的对象且不是Slides类型
     if (activeObject && !(activeObject instanceof Slides)) {
       // 克隆对象以便后续粘贴

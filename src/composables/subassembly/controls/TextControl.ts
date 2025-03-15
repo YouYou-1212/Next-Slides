@@ -212,7 +212,6 @@ export class TextControl extends fabric.IText {
       const originalWidth = this.width;
       const fontWidth = this.calcTextWidth();
       // 只有当计算的宽度大于当前宽度时才更新宽度
-      // 这样可以避免在缩小时出现宽度闪烁
       if (fontWidth > originalWidth) {
         this.width = fontWidth;
       } else {
@@ -259,6 +258,7 @@ export class TextControl extends fabric.IText {
       const newFontSize = Math.max(Number((this.fontSize * ratio).toFixed(3)), this._minFontSize);
       console.log('文本超出容器，缩小字体到:', newFontSize);
       this.set('fontSize', newFontSize);
+      this.syncTextStyles();
     } else if (props && oldWidth && oldHeight) {
       // 直接使用缩放因子来调整字体大小
       const scaleX = props.width ? props.width / oldWidth : 1;
@@ -272,13 +272,33 @@ export class TextControl extends fabric.IText {
         const newFontSize = Math.min(Number((this.fontSize * scaleFactor).toFixed(3)), this._originalFontSize);
         console.log('放大字体到:', newFontSize);
         this.set('fontSize', newFontSize);
+        this.syncTextStyles();
       } else if (scaleFactor < 1 && (containerWidthRatio < 1 || containerHeightRatio < 1)) {
         // 缩小文字
         const newFontSize = Math.max(Number((this.fontSize * scaleFactor).toFixed(3)), this._minFontSize);
         console.log('缩小字体到:', newFontSize);
         this.set('fontSize', newFontSize);
+        this.syncTextStyles();
       }
     }
+  }
+
+  
+    // 同步所有文本片段的样式
+    private syncTextStyles(): void {
+      // 检查是否有样式对象
+      if (!this.styles) return;
+      const currentFontSize = this.fontSize || 40;
+      // 遍历所有行和字符的样式
+      for (const lineIndex in this.styles) {
+          for (const charIndex in this.styles[lineIndex]) {
+              // 更新每个字符的字体大小
+              if (this.styles[lineIndex][charIndex]) {
+                  this.styles[lineIndex][charIndex].fontSize = currentFontSize;
+              }
+          }
+      }
+      console.log('已同步所有文本样式的字体大小:', currentFontSize);
   }
 
 
