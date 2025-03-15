@@ -36,7 +36,6 @@
 
 ![](https://github.com/YouYou-1212/Next-Slides/blob/main/pic/Snipaste_2025-03-15_17-28-41.png)
 
-
 ----
 
 
@@ -81,7 +80,7 @@ yarn dev
 
 ----
 
-如有任何问题或建议，请通过 [GitHub Issues](https://github.com/your-username/prezi-inspired-presentation-tool/issues) 联系我们。
+如有任何问题或建议，请通过 [GitHub Issues](https://github.com/YouYou-1212/Next-Slides/issues) 联系我们。
 
 
 
