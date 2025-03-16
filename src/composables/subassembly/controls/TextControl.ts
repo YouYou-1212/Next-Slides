@@ -1,5 +1,7 @@
 import * as fabric from "fabric";
 import { COLORS, SIZES } from "../../../constants/theme";
+import { EventBus, EventTypes } from "../../../utils/EventBus";
+import { getCanvasManager } from "../../../utils/CanvasUtils";
 
 export class TextControl extends fabric.IText {
   static type = "text";
@@ -12,8 +14,11 @@ export class TextControl extends fabric.IText {
   private _originalWidth: number = 0;
   private _originalHeight: number = 0;
   private _skipDimension: boolean = false;
-  private _minFontSize: number = 1;  // 添加最小字体大小
+  // 最小字体大小
+  private _minFontSize: number = 1;
   private _originalFontSize: number = this.fontSize;
+  //拖动状态标记
+  private _isMoving: boolean = false;
 
   constructor(text: string, options: any) {
     const defaultOptions = {
@@ -63,6 +68,9 @@ export class TextControl extends fabric.IText {
     this.on('scaling', this.handleScaling.bind(this));
     this.on('editing:entered', this.handleEditingEntered.bind(this));
     this.on('editing:exited', this.handleEditingExited.bind(this));
+    this.on('moving', this.handleMoving.bind(this));
+    this.on('mouseup', this.handleMoveEnd.bind(this));
+    this.on('deselected', this.handleMoveEnd.bind(this));
   }
 
 
@@ -448,6 +456,27 @@ export class TextControl extends fabric.IText {
       // 调用字体调整方法
       this.adjustTextSize(props, oldWidth, oldHeight);
     }
+  }
+
+  // 处理移动开始事件
+  private handleMoving(): void {
+    this._isMoving = true;
+    EventBus.emit(EventTypes.CONTROL_PANEL.HIDE_TEXT_SETTING_TOOLBAR);
+  }
+
+  // 处理移动结束事件
+  private handleMoveEnd(): void {
+    this._isMoving = false;  
+    EventBus.emit(EventTypes.CONTROL_PANEL.SHOW_TEXT_SETTING_TOOLBAR, {
+      target:this,
+      canvas: this.canvas,
+      canvasManager: getCanvasManager()
+    });
+  }
+
+  //获取当前是否正在移动
+  public isObjMoving(): boolean {
+    return this._isMoving;
   }
 
 }

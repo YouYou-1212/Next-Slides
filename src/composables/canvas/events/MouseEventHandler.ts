@@ -136,7 +136,6 @@ export class MouseEventHandler {
 
       // console.log("mouse:move 鼠标当前位置：", targets);
 
-
       if (this.eventManager.getKeyboardHandler().isInSpaceDragMode()) return;
       // 如果正在拖动对象，则不执行悬停检测
       if (this.canvas.isDraggingObject) return;
@@ -211,7 +210,6 @@ export class MouseEventHandler {
    */
   private setupMouseWheelEvents() {
     this.canvas.on("mouse:wheel", (opt: any) => {
-      console.log("鼠标滚轮事件：", opt);
       const delta = opt.e.deltaY;
       let zoom = this.canvas.getZoom();
       zoom *= 0.999 ** delta;
