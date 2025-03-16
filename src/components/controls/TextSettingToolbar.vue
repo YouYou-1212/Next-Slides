@@ -82,6 +82,17 @@
         </div>
       </div>
 
+      <!-- 文本框背景颜色选择器 -->
+      <div class="color-selector">
+        <button @click="showBoxBgColorPicker = !showBoxBgColorPicker" title="文本框背景颜色">
+          <div class="color-preview box-bg-color-preview" :style="{ backgroundColor: boxBgColor }"></div>
+        </button>
+        <div class="color-picker" v-if="showBoxBgColorPicker">
+          <div v-for="color in colorOptions" :key="color" class="color-option" :style="{ backgroundColor: color }"
+            @click="setBoxBgColor(color)"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -100,6 +111,7 @@ const targetObject = ref<fabric.Object | null>(null);
 const position = ref({ top: 0, left: 0 });
 const showColorPicker = ref(false);
 const showBgColorPicker = ref(false);
+const showBoxBgColorPicker = ref(false); // 文本框背景色选择器状态
 
 // 文本样式状态
 const isBold = ref(false);
@@ -107,10 +119,11 @@ const isItalic = ref(false);
 const isUnderline = ref(false);
 const fontSize = ref(16);
 const textColor = ref('#000000');
-const textBgColor = ref('transparent'); // 添加文本背景颜色
+const textBgColor = ref('transparent'); // 文本背景颜色
+const boxBgColor = ref('transparent'); // 文本框背景颜色
 const textAlign = ref('left');
 const fontFamily = ref('Arial');
-const textStyle = ref('normal'); // 添加文本样式
+const textStyle = ref('normal'); // 文本样式
 
 
 // 文本样式选项
@@ -160,6 +173,8 @@ const updateTextStyleState = () => {
   fontSize.value = textObj.fontSize || 16;
   textColor.value = textObj.fill || '#000000';
   textBgColor.value = textObj.textBackgroundColor || 'transparent'; // 获取文本背景颜色
+  // 获取文本背景颜色
+  boxBgColor.value = textObj.backgroundColor || 'transparent'; // 获取文本框背景颜色
   textAlign.value = textObj.textAlign || 'left';
   fontFamily.value = textObj.fontFamily || 'Arial';
 
@@ -251,6 +266,17 @@ const setTextBgColor = (color: string) => {
   textObj.set('textBackgroundColor', color);
   textBgColor.value = color;
   showBgColorPicker.value = false;
+  props.canvasManager?.canvas.renderAll();
+};
+
+// 设置文本框背景颜色
+const setBoxBgColor = (color: string) => {
+  if (!targetObject.value) return;
+
+  const textObj = targetObject.value as any;
+  textObj.set('backgroundColor', color);
+  boxBgColor.value = color;
+  showBoxBgColorPicker.value = false;
   props.canvasManager?.canvas.renderAll();
 };
 
@@ -395,6 +421,7 @@ onMounted(() => {
       !e.composedPath().some(el => (el as HTMLElement).classList?.contains('color-selector'))) {
       showColorPicker.value = false;
       showBgColorPicker.value = false;
+      showBoxBgColorPicker.value = false;
     }
   });
 });
@@ -577,9 +604,9 @@ i.fas {
 }
 
 /* 文本背景颜色预览样式 */
-.bg-color-preview {
+/* .bg-color-preview {
   position: relative;
-}
+} */
 
 .bg-color-preview::before {
   content: 'T';
@@ -669,6 +696,38 @@ button[title]:hover::after {
 }
 
 .bg-color-preview::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-color, transparent);
+  border-radius: 2px;
+}
+
+/* 添加文本框背景色选择器的特殊样式 */
+.box-bg-color-preview {
+  background-image: linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc),
+    linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc);
+  background-size: 8px 8px;
+  background-position: 0 0, 4px 4px;
+  background-color: transparent;
+  position: relative;
+}
+
+.box-bg-color-preview::before {
+  content: '□';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10px;
+  color: #333;
+  font-weight: bold;
+}
+
+.box-bg-color-preview::after {
   content: '';
   position: absolute;
   top: 0;
