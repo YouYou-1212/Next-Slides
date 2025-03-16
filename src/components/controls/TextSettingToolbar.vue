@@ -65,10 +65,8 @@
         <button @click="showColorPicker = !showColorPicker" title="文本颜色">
           <div class="color-preview" :style="{ backgroundColor: textColor }"></div>
         </button>
-        <div class="color-picker" v-if="showColorPicker">
-          <div v-for="color in colorOptions" :key="color" class="color-option" :style="{ backgroundColor: color }"
-            @click="setTextColor(color)"></div>
-        </div>
+        <ColorPicker v-if="showColorPicker" v-model:color="textColor" @select="handleTextColorSelect" />
+
       </div>
 
       <!-- 文本背景颜色选择器 -->
@@ -76,10 +74,7 @@
         <button @click="showBgColorPicker = !showBgColorPicker" title="文本背景颜色">
           <div class="color-preview bg-color-preview" :style="{ backgroundColor: textBgColor }"></div>
         </button>
-        <div class="color-picker" v-if="showBgColorPicker">
-          <div v-for="color in colorOptions" :key="color" class="color-option" :style="{ backgroundColor: color }"
-            @click="setTextBgColor(color)"></div>
-        </div>
+        <ColorPicker v-if="showBgColorPicker" v-model:color="textBgColor" @select="handleTextBgColorSelect" />
       </div>
 
       <!-- 文本框背景颜色选择器 -->
@@ -87,10 +82,7 @@
         <button @click="showBoxBgColorPicker = !showBoxBgColorPicker" title="文本框背景颜色">
           <div class="color-preview box-bg-color-preview" :style="{ backgroundColor: boxBgColor }"></div>
         </button>
-        <div class="color-picker" v-if="showBoxBgColorPicker">
-          <div v-for="color in colorOptions" :key="color" class="color-option" :style="{ backgroundColor: color }"
-            @click="setBoxBgColor(color)"></div>
-        </div>
+        <ColorPicker v-if="showBoxBgColorPicker" v-model:color="boxBgColor" @select="handleBoxBgColorSelect" />
       </div>
 
     </div>
@@ -100,6 +92,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import * as fabric from 'fabric';
+import { getSystemFonts, defaultFonts } from '../../utils/FontsUtils';
+import ColorPicker from './ColorPicker.vue';
 
 const props = defineProps<{
   canvasManager?: any;
@@ -138,21 +132,36 @@ const textStyles = [
 ];
 
 // 字体选项
-const fontFamilies = [
-  { label: '微软雅黑', value: 'Microsoft YaHei' },
-  { label: '宋体', value: 'SimSun' },
-  { label: '黑体', value: 'SimHei' },
-  { label: 'Arial', value: 'Arial' },
-  { label: 'Times New Roman', value: 'Times New Roman' },
-  { label: 'Courier New', value: 'Courier New' },
-];
+const fontFamilies = ref([
+  ...defaultFonts
+]);
 
-// 颜色选项
-const colorOptions = [
-  '#000000', '#FFFFFF', '#FF0000', '#00FF00', '#0000FF',
-  '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500', '#800080',
-  '#008000', '#800000', '#008080', '#000080', '#808080'
-];
+
+// 初始化字体列表
+const initFontList = async () => {
+  getSystemFonts().then((fonts) => {
+    fontFamilies.value = fonts;
+  }).catch((err) => {
+    console.error('获取系统字体失败:', err);
+    alert('获取系统字体失败，可能是因为页面不可见或缺少用户交互。请尝试点击页面后再操作。');
+  });
+};
+
+// 处理颜色选择
+const handleTextColorSelect = (color: string) => {
+  setTextColor(color);
+  showColorPicker.value = false;
+};
+
+const handleTextBgColorSelect = (color: string) => {
+  setTextBgColor(color);
+  showBgColorPicker.value = false;
+};
+
+const handleBoxBgColorSelect = (color: string) => {
+  setBoxBgColor(color);
+  showBoxBgColorPicker.value = false;
+};
 
 // 计算工具栏位置
 const toolbarStyle = computed(() => {
@@ -247,16 +256,18 @@ const decreaseFontSize = () => {
   fontSize.value = newSize;
 };
 
-// 设置文本颜色
+// 设置文本颜色时同步更新自定义颜色文本
 const setTextColor = (color: string) => {
   if (!targetObject.value) return;
 
   const textObj = targetObject.value as any;
   textObj.set('fill', color);
   textColor.value = color;
+  // customColorText.value = color === 'transparent' ? '' : color;
   showColorPicker.value = false;
   props.canvasManager?.canvas.renderAll();
 };
+
 
 // 设置文本背景颜色
 const setTextBgColor = (color: string) => {
@@ -279,7 +290,6 @@ const setBoxBgColor = (color: string) => {
   showBoxBgColorPicker.value = false;
   props.canvasManager?.canvas.renderAll();
 };
-
 
 // 设置文本对齐方式
 const setTextAlign = (align: string) => {
@@ -402,7 +412,7 @@ const calculatePosition = () => {
   const screenHeight = window.innerHeight;
 
   // 将工具栏放在对象上方并水平居中
-  let left = objLeft - (toolbarWidth / 2) - 50;
+  let left = objLeft - (toolbarWidth / 2);
   let top = objTop - toolbarHeight - 15;
 
   // 确保工具栏在屏幕范围内
@@ -415,6 +425,7 @@ const calculatePosition = () => {
 
 
 onMounted(() => {
+  initFontList();
   // 点击其他地方关闭颜色选择器
   document.addEventListener('click', (e) => {
     if ((showColorPicker.value || showBgColorPicker.value) &&
