@@ -2,6 +2,7 @@ import * as fabric from "fabric";
 import { Slides } from "../composables/slides/Slides";
 import { EventBus, EventTypes } from "./EventBus";
 import type { CanvasManager } from "../composables/canvas/CanvasManager";
+import type { CustomCanvas } from "../composables/canvas/CustomCanvas";
 
 // 添加全局引用存储 CanvasManager 实例
 let canvasManagerInstance: CanvasManager | null = null;
@@ -106,7 +107,7 @@ export function setBackgroundColor(canvas: fabric.Canvas, color: string) {
   EventBus.emit(EventTypes.CANVAS.BACKGROUND_COLOR_CHANGE, { canvas, color });
 }
 
-//根据坐标位置查找当前坐标下所有的对象
+
 /**
  * 根据坐标位置查找当前坐标下所有的对象
  * @param x 横坐标
@@ -279,6 +280,30 @@ export function isPointOnRectBorder(
 
   // 如果点在矩形内但不在内部矩形内，则点在边框上
   return isInsideRect && !isInsideInnerRect;
+}
+
+
+ /**
+   * 查找鼠标位置下的目标对象
+   */
+ export function findTargetObject(canvas:CustomCanvas, point: fabric.Point) {
+  const targets = findObjectsByPosition(canvas, point);
+  
+  const slidesTarget = targets.find((obj) => {
+    return obj instanceof Slides && isPointOnRectBorder(point, obj, 10);
+  });
+
+  let nonFrameTarget = null;
+  if (!slidesTarget) {
+    nonFrameTarget = targets.find(
+      (obj) => obj.type !== Slides.type && !(obj instanceof Slides)
+    );
+  }
+
+  return {
+    target: nonFrameTarget || slidesTarget,
+    targets
+  };
 }
 
 

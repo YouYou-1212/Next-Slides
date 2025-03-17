@@ -85,8 +85,6 @@ export class CustomCanvas extends fabric.Canvas {
      */
     remove(...objects: FabricObject[]) {
         const removed = super.remove(...objects);
-        // 移除后可能不需要调整层级，但为了安全起见，仍然调整一次
-        // this.adjustLayerOrder();
         return removed;
     }
 

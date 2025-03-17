@@ -3,7 +3,7 @@ import { COLORS, SIZES } from "../../../constants/theme";
 import { CanvasManager } from "../CanvasManager";
 import { Frame } from "../../slides/Frame";
 import { EventManager } from "../EventManager";
-import { findObjectsByPosition, isPointInObject, isPointOnRectBorder } from "../../../utils/CanvasUtils";
+import { findObjectsByPosition, findTargetObject, isPointInObject, isPointOnRectBorder } from "../../../utils/CanvasUtils";
 import { Slides } from "../../slides/Slides";
 import type { CustomCanvas } from "../CustomCanvas";
 
@@ -41,24 +41,13 @@ export class MouseEventHandler {
    * 覆盖事件处理
    */
   private setupEventOverrides() {
+    const originalCanvas = this.canvas;
     const originalFindTarget = this.canvas.findTarget;
     this.canvas.findTarget = function (e: fabric.TPointerEvent) {
       const pointer = this.getPointer(e, true);
       const point = new fabric.Point(pointer.x, pointer.y);
-      const targets = findObjectsByPosition(this, point);
-      const nonFrameTarget = targets.find(
-        (obj) => obj.type !== Slides.type && !(obj instanceof Slides)
-      );
-      if (nonFrameTarget) {
-        return nonFrameTarget;
-      }
-      const slidesTarget = targets.find((obj) => {
-        return obj instanceof Slides && isPointOnRectBorder(point, obj, 5);
-      });
-      if (slidesTarget) {
-        return slidesTarget;
-      }
-      return targets.length > 0 ? targets[0] : originalFindTarget.call(this, e);
+      const {target ,targets } = findTargetObject(originalCanvas , point);
+      return target || originalFindTarget.call(this, e);
     };
   }
 
@@ -73,24 +62,13 @@ export class MouseEventHandler {
 
         // 获取鼠标点击位置
         const pointer = this.canvas.getViewportPoint(opt);
-        console.log("mouse:down 鼠标点击位置：", pointer);
+        console.log("[MouseEventHandler] mouse:down：", pointer);
         const point = new fabric.Point(pointer.x, pointer.y);
-
-        // 查找点击位置下的所有对象
-        const targets = findObjectsByPosition(this.canvas, point);
-        // 查找第一个非Frame和PageFrame的对象
-        const nonFrameTarget = targets.find(
-          (obj) => obj.type !== Slides.type && !(obj instanceof Slides)
-        );
-
-        // 如果找到了非Frame对象，则选中它
-        if (nonFrameTarget) {
-          this.canvas.setActiveObject(nonFrameTarget);
+        const {target ,targets } = findTargetObject(this.canvas , point);
+        if (target) {
+          this.canvas.setActiveObject(target);
           this.canvas.requestRenderAll();
-          // 关键修改：设置事件目标为非Frame对象，确保后续事件能正确传递
-          opt.target = nonFrameTarget;
-          // // 阻止事件继续传播，防止选中Frame
-          // opt.e.stopPropagation();
+          opt.target = target;
           return;
         }
       } else {
@@ -129,19 +107,10 @@ export class MouseEventHandler {
         });
         return;
       }
-
       const pointer = this.canvas.getViewportPoint(opt);
-      // const point = new fabric.Point(pointer.x, pointer.y);
-      // const targets = findObjectsByPosition(this.canvas, point);
-
-      // console.log("mouse:move 鼠标当前位置：", targets);
-
       if (this.eventManager.getKeyboardHandler().isInSpaceDragMode()) return;
       // 如果正在拖动对象，则不执行悬停检测
       if (this.canvas.isDraggingObject) return;
-
-      // console.log("mouse:move 鼠标当前位置：", pointer);
-      // 处理对象的悬停效果
       this.handleObjectHover(pointer);
     });
   }
@@ -153,18 +122,8 @@ export class MouseEventHandler {
   private handleObjectHover(pointer: { x: number; y: number }) {
     // 设置默认光标样式
     this.canvas.defaultCursor = "default";
-
     const point = new fabric.Point(pointer.x, pointer.y);
-    const targets = findObjectsByPosition(this.canvas, point);
-    // console.log("发现鼠标下所有对象targets", targets);
-
-    // 从targets中找出第一个非Frame和PageFrame的元素
-    const nonFrameTarget = targets.find(
-      (obj) => obj.type !== Slides.type && !(obj instanceof Slides)
-    );
-
-    const target = nonFrameTarget || (targets.length > 0 ? targets[0] : null);
-
+    const {target ,targets } = findTargetObject(this.canvas , point);
     // 如果当前悬停对象与新对象不同
     if (this.currentHoverObject !== target) {
       // 处理鼠标移出旧对象
@@ -259,9 +218,7 @@ export class MouseEventHandler {
     if (target.type !== "text" && target.type !== "textbox") {
       highlightProps.customBorderColor = COLORS.BORDER.HOVER;
     }
-
     target.set(highlightProps);
-    // this.canvas.requestRenderAll();
   }
 
   /**
@@ -281,6 +238,7 @@ export class MouseEventHandler {
     }
     this.restoreOriginalState(target);
   }
+
 
   private saveOriginalState(target: any) {
     target._originalBorderColor = target.borderColor;
