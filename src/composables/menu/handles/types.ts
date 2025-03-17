@@ -1,6 +1,7 @@
 import type * as fabric from 'fabric';
 import type { CanvasManager } from '../../canvas/CanvasManager';
 import type { ContextMenuManager } from '../ContextMenuManager';
+import type { CustomCanvas } from '@/composables/canvas/CustomCanvas';
 
 export interface Position {
   x: number;
@@ -8,7 +9,7 @@ export interface Position {
 }
 
 export interface HandlerContext {
-  canvas: fabric.Canvas;
+  canvas: CustomCanvas;
   canvasManager:CanvasManager;
   contextMenuManager: ContextMenuManager;
 }

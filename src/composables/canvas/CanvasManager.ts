@@ -158,6 +158,9 @@ export class CanvasManager {
   }
 
 
+  /**
+   * 初始化辅助线
+   */
   initAligningGuidelines() {
     const config = {
       margin: 4,
@@ -168,6 +171,9 @@ export class CanvasManager {
     const deactivate = initAligningGuidelines(this.canvas, config);
   }
 
+  /**
+   * 初始化PageFrame
+   */
   initPageFramge() {
     const page = this.createPageFrame();
     this.canvas.add(page);

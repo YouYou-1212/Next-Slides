@@ -41,7 +41,7 @@ export class PageFrameManager {
       width,
       height,
     });
-    console.log("createDefaultPage", this.pageFrameEventHandler);
+    // console.log("createDefaultPage", this.pageFrameEventHandler);
     this.pageFrameEventHandler.setupPageFrameEvents(this.pageFrame);
     // this.setCurrentPage(page);
 
