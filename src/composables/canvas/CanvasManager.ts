@@ -15,6 +15,10 @@ import { CanvasSyncManager } from "./CanvasSyncManager";
 import { CustomCanvas } from "./CustomCanvas";
 import type { Slides } from "../slides/Slides";
 
+//默认演示模板
+import defaultTemplate from '../../../public/res/NextSlide_Export_20250318_1151.json';
+
+
 export interface CanvasOptions {
   width?: number;
   height?: number;
@@ -155,6 +159,9 @@ export class CanvasManager {
     this.initResizeListener();
 
     setCanvasManager(this);
+
+    // 导入默认模板
+    this.importCanvasFromJSON(defaultTemplate);
   }
 
 
@@ -340,7 +347,7 @@ export class CanvasManager {
    */
   public removeObject(object: fabric.Object) {
     const parentFrame = this.getFrameManager().findParentFrame(object);
-    if(parentFrame){
+    if (parentFrame) {
       parentFrame.removeContent(object);
     }
     this.canvas.remove(object);
@@ -354,8 +361,14 @@ export class CanvasManager {
      */
   public exportCanvasToJSON() {
     try {
+      const currentTransform:any = [...this.canvas.viewportTransform!];
+      // 临时重置视口变换为默认值
+      this.canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+
       // 获取画布JSON数据
       const canvasJSON = this.canvas.toJSON();
+      // 恢复原始视口变换
+      this.canvas.setViewportTransform(currentTransform);
 
       // 创建Blob对象
       const blob = new Blob([JSON.stringify(canvasJSON, null, 2)], { type: 'application/json' });
@@ -389,6 +402,7 @@ export class CanvasManager {
    * @param jsonData JSON字符串或对象
    */
   public importCanvasFromJSON(jsonData: string | object) {
+    console.log('importCanvasFromJSON', jsonData);
     try {
       // 清空当前画布
       this.clear();

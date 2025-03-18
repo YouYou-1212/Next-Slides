@@ -9,17 +9,25 @@
     </button>
     <!-- 隐藏的文件输入框 -->
     <input type="file" ref="fileInput" accept="image/*" style="display: none" @change="onFileSelected" />
-    
-    <!-- 图片列表区域 -->
+
+
+    <!-- 系统资源区域 -->
+    <div class="image-list-container">
+      <h3 class="section-title">系统资源</h3>
+      <div class="image-grid">
+        <div v-for="(image, index) in systemImages" :key="index" class="image-item"
+          @click="insertImageFromUrl(image.url)">
+          <img :src="image.url" :alt="`系统图片 ${index + 1}`" class="thumbnail" />
+        </div>
+      </div>
+    </div>
+
+
+    <!-- 在线资源 图片列表区域 -->
     <div class="image-list-container">
       <h3 class="section-title">在线图片</h3>
       <div class="image-grid">
-        <div 
-          v-for="(image, index) in imageList" 
-          :key="index" 
-          class="image-item"
-          @click="insertImageFromUrl(image.url)"
-        >
+        <div v-for="(image, index) in imageList" :key="index" class="image-item" @click="insertImageFromUrl(image.url)">
           <img :src="image.thumbnail" :alt="`图片 ${index + 1}`" class="thumbnail" />
         </div>
       </div>
@@ -38,9 +46,12 @@ import { ref, onMounted, markRaw } from 'vue';
 import * as fabric from 'fabric';
 import type { CanvasManager } from '../../composables/canvas/CanvasManager';
 
+// 添加系统资源列表
+const systemImages = ref<{ url: string }[]>([]);
+
 const props = defineProps<{
   canvas: fabric.Canvas;
-  canvasManager:CanvasManager;
+  canvasManager: CanvasManager;
   target: any;
   position: any;
 }>();
@@ -67,16 +78,33 @@ const onFileSelected = (event: Event) => {
     const file = input.files[0];
     // 使用 URL.createObjectURL 创建本地URL
     const objectUrl = URL.createObjectURL(file);
-    console.log("文件选择器选择的内容为：", props.canvasManager , objectUrl);
+    console.log("文件选择器选择的内容为：", props.canvasManager, objectUrl);
     props.canvasManager.getControlsManager().addImage(objectUrl);
     input.value = '';
+  }
+};
+
+// 加载系统资源
+const loadSystemImages = async () => {
+  try {
+    // 使用import.meta.glob导入所有SVG文件
+    const svgContext = import.meta.glob('/public/svg/*.svg', { eager: true });
+    console.log("svgContext", svgContext);
+    const images = Object.entries(svgContext).map(([path, module]: [string, any]) => ({
+      url: module.default,
+    }));
+    console.log("svgContext images", images);
+    
+    systemImages.value = images;
+  } catch (error) {
+    console.error('加载系统资源失败:', error);
   }
 };
 
 // 从Picsum Photos加载图片
 const loadImages = async () => {
   if (isLoading.value) return;
-  
+
   isLoading.value = true;
   try {
     // 使用Picsum Photos的列表API获取图片数据
@@ -84,9 +112,9 @@ const loadImages = async () => {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const data = await response.json();
-    
+
     // 处理返回的图片数据
     const newImages = data.map((item: any) => {
       // 从download_url中提取图片ID
@@ -94,14 +122,14 @@ const loadImages = async () => {
       // 构建高分辨率图片URL和缩略图URL
       const imageUrl = `https://picsum.photos/id/${id}/${imageSize}/${imageSize}`;
       const thumbnailUrl = `https://picsum.photos/id/${id}/${thumbnailSize}/${thumbnailSize}`;
-      
+
       return {
         url: imageUrl,
         thumbnail: thumbnailUrl,
         author: item.author || '未知作者'
       };
     });
-    
+
     // 添加到图片列表
     imageList.value = [...imageList.value, ...newImages];
     page.value++;
@@ -125,6 +153,7 @@ const insertImageFromUrl = (url: string) => {
 
 // 组件挂载时加载初始图片
 onMounted(() => {
+  loadSystemImages();
   loadImages();
 });
 </script>

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<svg width="30" height="40" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+ <g class="layer">
+  <title _mstHash="1" _mstTextHash="5637814">第 1 层</title>
+  <g fill="#333333" id="svg_1" stroke="#333333" stroke-width="2" transform="rotate(135 15 19.7952)">
+   <!-- 第一个箭头 -->
+   <polygon id="svg_2" points="7.75571882724762,9.741044044494629 16.73842203617096,19.741044998168945 7.75571882724762,29.741044998168945 13.369908332824707,29.741044998168945 22.352611541748047,19.741044998168945 13.369908332824707,9.741044044494629 " transform="rotate(90 15 19.741)"/>
+  </g>
+ </g>
+</svg>
