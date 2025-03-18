@@ -1,7 +1,7 @@
 import * as fabric from 'fabric';
 
 export class ShapeControl extends fabric.FabricObject {
-  static type = 'shape';
+  static type = 'ShapeControl';
   static create(type: string, options: any) {
     let shape;
     const defaultOptions = {
@@ -21,15 +21,15 @@ export class ShapeControl extends fabric.FabricObject {
       case "square":
       case "rect":
         shape = new fabric.Rect(defaultOptions);
-        shape.type = "rect";
+        shape.type = "Control_Rect";
         break;
       case "circle":
         shape = new fabric.Circle(defaultOptions);
-        shape.type = "circle";
+        shape.type = "Control_Circle";
         break;
       case "triangle":
         shape = new fabric.Triangle(defaultOptions);
-        shape.type = "triangle";
+        shape.type = "Control_Triangle";
         break;
       case "line":
         shape = new fabric.Line([0, 0, defaultOptions.width, 0], {
@@ -37,7 +37,7 @@ export class ShapeControl extends fabric.FabricObject {
           stroke: defaultOptions.stroke || "#333",
           strokeWidth: defaultOptions.strokeWidth || 2
         });
-        shape.type = "line";
+        shape.type = "Control_Line";
         break;
       case "arrow":
         const arrowWidth = defaultOptions.width || 100;
@@ -58,7 +58,7 @@ export class ShapeControl extends fabric.FabricObject {
           strokeLineJoin: 'round',
           strokeLineCap: 'round'
         });
-        shape.type = "arrow";
+        shape.type = "Control_Arrow";
         break;
     }
 

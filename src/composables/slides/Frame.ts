@@ -18,7 +18,6 @@ export class Frame extends Slides {
   declare isCurrentSelected: boolean;
 
   constructor(options: any) {
-    console.log("Frame options", options);
     const frameOptions = {
       ...options,
     };
@@ -33,7 +32,7 @@ export class Frame extends Slides {
     // this.showFrameNumberControl = false; // 默认隐藏
     // this.isHoveringControl = false;
 
-    console.log("初始化Frame当前Frame Order:", this.order);
+    // console.log("初始化Frame当前Frame Order:", this.order);
     this.initFrameNumberControl();
   }
 

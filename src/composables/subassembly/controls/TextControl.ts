@@ -4,7 +4,7 @@ import { EventBus, EventTypes } from "../../../utils/EventBus";
 import { getCanvasManager } from "../../../utils/CanvasUtils";
 
 export class TextControl extends fabric.IText {
-  static type = "text";
+  static type = "TextControl";
   private _showBorder: boolean = false;
   private _hoverBorderColor: string = COLORS.BORDER.HOVER;
   private lineWidth: number = 1;
@@ -72,7 +72,6 @@ export class TextControl extends fabric.IText {
     this.on('mouseup', this.handleMoveEnd.bind(this));
     this.on('deselected', this.handleMoveEnd.bind(this));
   }
-
 
   // 处理进入编辑状态
   private handleEditingEntered(): void {
@@ -466,9 +465,9 @@ export class TextControl extends fabric.IText {
 
   // 处理移动结束事件
   private handleMoveEnd(): void {
-    this._isMoving = false;  
+    this._isMoving = false;
     EventBus.emit(EventTypes.CONTROL_PANEL.SHOW_TEXT_SETTING_TOOLBAR, {
-      target:this,
+      target: this,
       canvas: this.canvas,
       canvasManager: getCanvasManager()
     });
@@ -479,5 +478,38 @@ export class TextControl extends fabric.IText {
     return this._isMoving;
   }
 
+  
+  toJSON() {
+    return {
+     ...super.toJSON(),
+    type: TextControl.type,
+    _showBorder: this._showBorder,
+    _hoverBorderColor: this._hoverBorderColor,
+    lineWidth: this.lineWidth,
+    preventDistortion: this.preventDistortion,
+    _originalWidth: this._originalWidth,
+    _originalHeight: this._originalHeight,
+    _skipDimension: this._skipDimension,
+    _minFontSize: this._minFontSize,
+    _originalFontSize: this._originalFontSize,
+    _isMoving: this._isMoving,
+    };
+  }
+
+toObject(propertiesToInclude: any[] = []): any{
+  return super.toObject([...propertiesToInclude, '_showBorder', '_hoverBorderColor', 'lineWidth', 'preventDistortion', 
+    '_originalWidth', '_originalHeight', '_skipDimension', '_minFontSize', '_originalFontSize', '_isMoving']);
 }
 
+
+  // 用于从JSON创建对象
+  fromObject(object: any, callback: Function): void {
+    const textObj = new TextControl(object.text, object);
+    Object.setPrototypeOf(textObj, TextControl.prototype);
+    callback && callback(textObj);
+  }
+
+}
+
+fabric.classRegistry.setClass(TextControl, TextControl.type);
+fabric.classRegistry.setSVGClass(TextControl, TextControl.type);

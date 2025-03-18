@@ -113,10 +113,10 @@ export class ThumbnailManager {
         width = this.defaultWidth,
         height = this.defaultHeight
     ): HTMLCanvasElement {
-        console.log(
-            `[缩略图管理器] 初始化缩略图Canvas:type: ${type}  id: ${id}`,
-            container
-        );
+        // console.log(
+        //     `[缩略图管理器] 初始化缩略图Canvas:type: ${type}  id: ${id}`,
+        //     container
+        // );
         // 创建新的Canvas元素
         const canvas = document.createElement("canvas");
         canvas.width = width;
@@ -165,7 +165,7 @@ export class ThumbnailManager {
             return;
         }
 
-        console.log("[缩略图管理器] 挂载Canvas到容器", container);
+        // console.log("[缩略图管理器] 挂载Canvas到容器", container);
         // 清空容器
         container.innerHTML = "";
         // 插入Canvas
@@ -178,11 +178,11 @@ export class ThumbnailManager {
      * @returns boolean
      */
     hasThumbnailCanvas(id: string): boolean {
-        console.log(
-            `[缩略图管理器] 检查是否存在缩略图Canvas: ${id}`,
-            "全部画布缓存：",
-            this.thumbnailCanvases
-        );
+        // console.log(
+        //     `[缩略图管理器] 检查是否存在缩略图Canvas: ${id}`,
+        //     "全部画布缓存：",
+        //     this.thumbnailCanvases
+        // );
         return this.thumbnailCanvases.has(id);
     }
 
@@ -229,7 +229,7 @@ export class ThumbnailManager {
     setupEventListeners(): void {
         if (this.eventListenersSet) return;
         EventBus.on(EventTypes.CANVAS.CANVAS_UPDATE, (payload) => {
-            console.log("[缩略图管理器] 接收到画布更新事件", payload);
+            // console.log("[缩略图管理器] 接收到画布更新事件", payload);
             // 先更新帧列表
             if (this.updateFramesCallback) {
                 this.updateFramesCallback();
@@ -238,7 +238,7 @@ export class ThumbnailManager {
         });
 
         this.eventListenersSet = true;
-        console.log("[缩略图管理器] 事件监听器已设置");
+        // console.log("[缩略图管理器] 事件监听器已设置");
     }
 
     /**
@@ -259,8 +259,6 @@ export class ThumbnailManager {
     updateAllThumbnails(debounceTime = 100): void {
         // 通知开始更新
         this.onUpdateStart?.();
-        console.log("[缩略图] 开始更新所有缩略图");
-
         // 清除之前的定时器
         if (this.updateTimer) {
             clearTimeout(this.updateTimer);
@@ -278,7 +276,7 @@ export class ThumbnailManager {
                 // 通知更新完成
                 this.onUpdateComplete?.();
 
-                console.log("[缩略图] 所有缩略图更新完成");
+                // console.log("[缩略图] 所有缩略图更新完成");
             } catch (error) {
                 console.error("[缩略图] 更新缩略图时发生错误:", error);
             }
@@ -304,7 +302,7 @@ export class ThumbnailManager {
         }
 
         try {
-            console.log("[缩略图] 开始更新页面概览缩略图");
+            // console.log("[缩略图] 开始更新页面概览缩略图");
 
             // 获取页面概览的缩略图数据
             const thumbnailData = await pageOverview.thumbnail(
@@ -313,10 +311,10 @@ export class ThumbnailManager {
             );
 
             if (thumbnailData) {
-                console.log(
-                    "[缩略图] 页面概览缩略图更新成功，时间戳:",
-                    thumbnailData.timestamp
-                );
+                // console.log(
+                //     "[缩略图] 页面概览缩略图更新成功，时间戳:",
+                //     thumbnailData.timestamp
+                // );
             } else {
                 console.warn("[缩略图] 页面概览缩略图获取结果为空");
             }
@@ -344,7 +342,7 @@ export class ThumbnailManager {
                     continue;
                 }
 
-                console.log(`[缩略图] 开始更新Frame ${frame.id} 的缩略图`);
+                // console.log(`[缩略图] 开始更新Frame ${frame.id} 的缩略图`);
 
                 // 获取或初始化Frame的缩略图Canvas
                 const thumbnailInfo = this.thumbnailCanvases.get(frame.id);
@@ -358,9 +356,9 @@ export class ThumbnailManager {
                 // 直接在Canvas上绘制缩略图
                 const thumbnailData = await frame.thumbnail(canvas);
                 if (thumbnailData) {
-                    console.log(
-                        `[缩略图] Frame ${frame.id} 缩略图更新成功，时间戳: ${thumbnailData.timestamp}`
-                    );
+                    // console.log(
+                    //     `[缩略图] Frame ${frame.id} 缩略图更新成功，时间戳: ${thumbnailData.timestamp}`
+                    // );
                 } else {
                     console.warn(`[缩略图] Frame ${frame.id} 缩略图获取结果为空`);
                 }

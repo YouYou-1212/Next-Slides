@@ -40,6 +40,9 @@ export class ObjectEventHandler {
     // 监听对象移动中事件，实时更新坐标
     this.canvas.on('object:moving', (opt: any) => {
       const target = opt.target;
+      if (target && typeof target.fire === 'function') {
+        target.fire('moving', opt);
+      }
       this.canvas.isDraggingObject = true;
       // console.log("object:moving 对象被拖动事件", opt);
     });

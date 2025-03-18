@@ -2,7 +2,7 @@ import { COLORS, SIZES } from "../../../constants/theme";
 import * as fabric from "fabric";
 
 export class ImageControl extends fabric.FabricImage {
-  static type = "image";
+  static type = "ImageControl";
 
   static async create(url: string, options: any) {
 

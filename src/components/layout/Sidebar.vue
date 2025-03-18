@@ -59,7 +59,7 @@ const initThumbnailManager = () => {
       },
       () => {
         // 初始化完成回调
-        console.log("[Sidebar] Frame列表已初始化完成，回调函数返回");
+        // console.log("[Sidebar] Frame列表已初始化完成，回调函数返回");
         loadFrames();
       }
     );

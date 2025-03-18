@@ -63,7 +63,6 @@ export class CustomCanvas extends fabric.Canvas {
                 }
             }
         }
-        console.log("[CustomCanvas] add 元素", this._objects);
 
         // 更新 PageFrame 索引（如果有多个 PageFrame 被添加）
         this.updatePageFrameIndex();
@@ -77,7 +76,6 @@ export class CustomCanvas extends fabric.Canvas {
     private updatePageFrameIndex(): void {
         const allObjects = this.getObjects();
         this.pageFrameIndex = allObjects.findIndex(obj => obj instanceof PageFrame);
-        console.log("[CustomCanvas] updatePageFrameIndex", this.pageFrameIndex);
     }
 
     /**

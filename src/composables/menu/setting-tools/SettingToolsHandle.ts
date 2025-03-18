@@ -59,7 +59,7 @@ export function useSettingToolsHandle(canvasManager: any) {
   
    // 监听事件，直接更新本地状态
    const handleShowTextSettingToolbar = (data: any) => {
-    console.log("useSettingToolsHandle 收到显示文本设置工具栏事件", data);
+    // console.log("useSettingToolsHandle 收到显示文本设置工具栏事件", data);
     textSettingToolbarData.value = data;
     textSettingToolbarVisible.value = true;
     if (settingToolsHandle.value) {
@@ -69,6 +69,7 @@ export function useSettingToolsHandle(canvasManager: any) {
   };
   
   const handleHideTextSettingToolbar = () => {
+    // console.log("useSettingToolsHandle 收到隐藏文本设置工具栏事件");
     textSettingToolbarVisible.value = false;
     textSettingToolbarData.value = null;
     if (settingToolsHandle.value) {
