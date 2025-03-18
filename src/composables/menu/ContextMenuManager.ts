@@ -18,7 +18,7 @@ export class ContextMenuManager {
   // 存储最后的事件对象
   private lastEvent: MouseEvent | null = null;
 
-  constructor(canvas: fabric.Canvas, canvasManager: CanvasManager) {
+  constructor(canvas: CustomCanvas, canvasManager: CanvasManager) {
     this.canvas = canvas;
     this.canvasManager = canvasManager;
     this.menuElement = this.createMenuElement();
