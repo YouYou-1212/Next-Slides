@@ -6,6 +6,14 @@
 
 [主仓库地址：Github](https://github.com/YouYou-1212/Next-Slides)
 
+
+
+# 在线演示
+
+[Next-Slides](https://youyou-1212.github.io/Next-Slides/#/)
+
+
+
 # 功能特点
 
 ----
@@ -87,5 +95,3 @@ yarn dev
 ----
 
 感谢您的关注和支持！希望这个项目能为您的在线教育和会议演示带来便利和创新的体验。
-
-
