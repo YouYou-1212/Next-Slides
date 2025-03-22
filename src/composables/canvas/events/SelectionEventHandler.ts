@@ -3,7 +3,10 @@ import { COLORS, SIZES } from "../../../constants/theme";
 import { CanvasManager } from "../CanvasManager";
 import { Frame } from "../../slides/Frame";
 import { PageFrame } from "../../slides/PageFrame";
-import  { EventBus, EventTypes } from "../../../utils/EventBus";
+import { EventBus, EventTypes } from "../../../utils/EventBus";
+import { TextControl } from "../../../composables/subassembly/controls/TextControl";
+import { Slides } from "../../../composables/slides/Slides";
+import { ImageControl } from "../../../composables/subassembly/controls/ImageControl";
 
 export class SelectionEventHandler {
   private canvas: fabric.Canvas;
@@ -28,15 +31,30 @@ export class SelectionEventHandler {
     const target = event.selected?.[0];
     if (!target) return;
 
-    this.handleSelectionEventBorderStatus(event);
+    // console.log("handleSelection Slides 开始选中：", target);
+    // if (target instanceof Slides) {
+    //   console.log("handleSelection Slides", target);
+    //   target.setCu1stomBorderColor(COLORS.BORDER.SLIDES_HOVER);
+    // }
 
+
+    this.handleSelectionEventBorderStatus(event);
     // 处理文本组件选中，显示文本设置工具栏
-    if (target.type === "text" || target.type === "textbox") {
+    if (target.type === TextControl.type || target.type === "textbox") {
       this.showTextSettingToolbar(target);
     } else {
       // 非文本组件选中时，隐藏文本设置工具栏
       this.hideTextSettingToolbar();
     }
+
+
+    if (target.type === ImageControl.type) {
+      this.showImageSettingToolbar(target);
+    } else {
+      // 非文本组件选中时，隐藏文本设置工具栏
+      this.hideImageSettingToolbar();
+    }
+
 
     if (target.type === Frame.type) {
       this.canvasManager.getFrameManager().setCurrentFrame(target);
@@ -55,6 +73,9 @@ export class SelectionEventHandler {
     this.toggleFrameNumberControls(null);
     // 隐藏文本设置工具栏
     this.hideTextSettingToolbar();
+    // const deselectedObjects = event.deselected;
+
+    // this.restoreOriginalState(target);
   }
 
   private handleSelectionEventBorderStatus(event: any) {
@@ -66,50 +87,58 @@ export class SelectionEventHandler {
     // );
     if (deselectedObjects?.length > 0) {
       deselectedObjects.forEach((target: any) => {
-        if (target.type === "text" && typeof target.showBorder === "function") {
+        if (target.type === TextControl.type && typeof target.showBorder === "function") {
           target.showBorder(false);
           return;
         }
         this.restoreOriginalState(target);
       });
-    } else {
-      //首次选中
-      const selectedObjects = event.selected;
-      // console.log(
-      //   "handleSelectionEventBorderStatus selectedObjects"
-      //   // target , target._originalCustomBorderColor
-      // );
-      if (selectedObjects?.length > 0) {
-        selectedObjects.forEach((target: any) => {
-          if (target.type === "frame") {
-            if (target._originalCustomBorderColor === undefined) {
-              target._originalBorderColor = target.borderColor;
-              target._originalCustomBorderColor = target.customBorderColor;
-              target._originalStrokeWidth = target.strokeWidth;
-              target._originalBorderScaleFactor = target.borderScaleFactor;
-
-              target.set({
-                borderColor: COLORS.BORDER.HOVER,
-                customBorderColor: COLORS.BORDER.HOVER,
-                strokeWidth: SIZES.STROKE_WIDTH,
-                // borderScaleFactor: 1,
-              });
-              this.canvas.requestRenderAll();
-            }
-            return;
-          }
-        });
-      }
     }
+
+
+    //首次选中
+    const selectedObjects = event.selected;
+    // console.log(
+    //   "handleSelectionEventBorderStatus selectedObjects",
+    //   selectedObjects
+    // );
+    if (selectedObjects?.length > 0) {
+      selectedObjects.forEach((target: any) => {
+        // console.log(
+        //   "handleSelectionEventBorderStatus selectedObjects 循环遍历：",
+        //   target
+        // );
+        if (target.type === PageFrame.type || target.type === Frame.type) {
+          // console.log("handleSelectionEventBorderStatus Slides 选中前保存原始边框颜色：", target , target._originalCustomBorderColor);
+          if (target._originalCustomBorderColor === undefined) {
+            target._originalBorderColor = target.borderColor;
+            target._originalCustomBorderColor = target.customBorderColor;
+            target._originalStrokeWidth = target.strokeWidth;
+            target._originalBorderScaleFactor = target.borderScaleFactor;
+            // console.log("handleSelectionEventBorderStatus Slides 保存的原始边框颜色：" , target);
+            target.set({
+              borderColor: COLORS.BORDER.SLIDES_HOVER,
+              customBorderColor: COLORS.BORDER.SLIDES_HOVER,
+              strokeWidth: SIZES.STROKE_WIDTH,
+              // borderScaleFactor: 1,
+            });
+            this.canvas.requestRenderAll();
+          }
+          return;
+        }
+      });
+    }
+
   }
 
   private restoreOriginalState(target: any) {
+    // console.log("restoreOriginalState", target , target._originalCustomBorderColor);
     if (target._originalCustomBorderColor !== undefined) {
       const restoreProps: any = {
         borderColor: target._originalBorderColor,
       };
 
-      if (target.type !== "text" && target.type !== "textbox") {
+      if (target.type !== TextControl.type) {
         restoreProps.customBorderColor = target._originalCustomBorderColor;
       }
 
@@ -132,7 +161,7 @@ export class SelectionEventHandler {
   private toggleFrameNumberControls(target: any) {
     // 如果target为空，则隐藏所有数字标签
     if (!target) {
-      console.log("隐藏所有Frame的控件");
+      // console.log("隐藏所有Frame的控件");
       this.hideAllFrameNumberControls();
       return;
     }
@@ -180,8 +209,8 @@ export class SelectionEventHandler {
 
   // 显示文本设置工具栏
   private showTextSettingToolbar(target: fabric.Object) {
-    if (!target || (target.type !== "text" && target.type !== "textbox")) return;
-    
+    if (!target || (target.type !== TextControl.type)) return;
+
     EventBus.emit(EventTypes.CONTROL_PANEL.SHOW_TEXT_SETTING_TOOLBAR, {
       target,
       canvas: this.canvas,
@@ -192,6 +221,23 @@ export class SelectionEventHandler {
   // 隐藏文本设置工具栏
   private hideTextSettingToolbar() {
     EventBus.emit(EventTypes.CONTROL_PANEL.HIDE_TEXT_SETTING_TOOLBAR);
+  }
+
+
+  // 显示图片设置工具栏
+  private showImageSettingToolbar(target: fabric.Object) {
+    if (!target) return;
+
+    EventBus.emit(EventTypes.CONTROL_PANEL.SHOW_IMAGE_SETTING_TOOLBAR, {
+      target,
+      canvas: this.canvas,
+      canvasManager: this.canvasManager
+    });
+  }
+
+  // 隐藏图片设置工具栏
+  private hideImageSettingToolbar() {
+    EventBus.emit(EventTypes.CONTROL_PANEL.HIDE_IMAGE_SETTING_TOOLBAR);
   }
 
   public destroy() {

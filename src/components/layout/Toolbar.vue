@@ -48,6 +48,9 @@
 import { ref, onMounted, watch } from "vue";
 import type { CanvasManager } from "../../composables/canvas/CanvasManager";
 import { EventBus, EventTypes } from "../../utils/EventBus";
+import { useRouter } from "vue-router";
+
+const router = useRouter(); // 使用 useRouter 获取路由实例
 
 const props = defineProps<{ canvasManager: CanvasManager | null }>();
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -95,7 +98,8 @@ const handleJsonImport = (event: Event) => {
 
 // 打开测试页面
 const openTestPage = () => {
-  window.open('/test-page', '_blank');
+  // window.open('/test', '_blank');
+  router.push('/test');
 };
 
 // 获取所有帧

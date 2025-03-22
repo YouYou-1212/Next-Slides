@@ -45,6 +45,7 @@
 import { ref, onMounted, markRaw } from 'vue';
 import * as fabric from 'fabric';
 import type { CanvasManager } from '../../composables/canvas/CanvasManager';
+import { EventTypes } from '../../utils/EventBus';
 
 // 添加系统资源列表
 const systemImages = ref<{ url: string }[]>([]);
@@ -54,6 +55,7 @@ const props = defineProps<{
   canvasManager: CanvasManager;
   target: any;
   position: any;
+  action:string;
 }>();
 
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -78,7 +80,7 @@ const onFileSelected = (event: Event) => {
     const file = input.files[0];
     // 使用 URL.createObjectURL 创建本地URL
     const objectUrl = URL.createObjectURL(file);
-    console.log("文件选择器选择的内容为：", props.canvasManager, objectUrl);
+    // console.log("文件选择器选择的内容为：", props.canvasManager, objectUrl);
     props.canvasManager.getControlsManager().addImage(objectUrl);
     input.value = '';
   }
@@ -148,7 +150,14 @@ const loadMoreImages = () => {
 // 从URL插入图片
 const insertImageFromUrl = (url: string) => {
   if (!props.canvasManager) return;
-  props.canvasManager.getControlsManager().addImage(url);
+  if(props.action && props.action === EventTypes.PANEL_ACTION.REPLACE_IMAGE){
+    //如果action为替换图片，则替换 props.target的图片
+    if (props.target && props.target.replaceImage) {
+      props.target.replaceImage(url);
+    }
+  }else{
+    props.canvasManager.getControlsManager().addImage(url);
+  }
 };
 
 // 组件挂载时加载初始图片

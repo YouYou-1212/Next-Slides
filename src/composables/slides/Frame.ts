@@ -78,30 +78,6 @@ export class Frame extends Slides {
     // this.requestRender();
   }
 
-  // // 判断鼠标是否在控件区域内
-  // isMouseOverControl(e: any) {
-  //   if (!e.absolutePointer) return false;
-  //   // 获取控件位置
-  //   const control = this.controls.frameNumberCorner;
-  //   if (!control) return false;
-  //   const zoom = this.canvas ? this.canvas.getZoom() : 1;
-  //   // const { x, y } = control;
-  //   const size = 24; // 控件大小
-
-  //   // 计算控件中心点在画布上的绝对位置
-  //   const centerX = this.left;
-  //   const centerY = this.top;
-  //   // 检查鼠标是否在控件区域内
-  //   const mouseX = e.absolutePointer.x;
-  //   const mouseY = e.absolutePointer.y;
-  //   return (
-  //     mouseX >= centerX - size / 2 / zoom &&
-  //     mouseX <= centerX + size / 2 / zoom &&
-  //     mouseY >= centerY - size / 2 / zoom &&
-  //     mouseY <= centerY + size / 2 / zoom
-  //   );
-  // }
-
   /**
    * 渲染自定义控件
    * @param ctx
@@ -134,7 +110,7 @@ export class Frame extends Slides {
     // ctx.fillStyle = COLORS.BORDER.HOVER;
     // console.log("renderCustomCorner isCurrentSelected", this.isCurrentSelected);
     ctx.fillStyle = this.isCurrentSelected
-      ? COLORS.BORDER.HOVER
+      ? COLORS.BORDER.SLIDES_HOVER
       : COLORS.BORDER.UNSELECTED;
     ctx.fill();
 
@@ -151,14 +127,16 @@ export class Frame extends Slides {
    * 覆盖父类方法，决定非活动状态下是否显示自定义控件
    */
   protected shouldRenderCustomControlsWhenInactive(): boolean {
-    return true; // Frame总是在非活动状态下显示自定义控件
+    // Frame总是在非活动状态下显示自定义控件
+    return true; 
   }
 
   /**
    * 覆盖父类方法，决定显示哪些自定义控件
    */
   protected getCustomControlsToShow(): string[] {
-    return ["frameNumberCorner"]; // 只显示frameNumberCorner控件
+    // 只显示frameNumberCorner控件
+    return ["frameNumberCorner"]; 
   }
 
   /**
@@ -167,7 +145,7 @@ export class Frame extends Slides {
    */
   updateContents() {
     if (this.contents.size > 0) {
-      console.log("updateContents", this.contents);
+      // console.log("updateContents", this.contents);
       // 预先计算变换矩阵
       // const { sin, cos } = this.getRotationMatrix();
       const { scaleX, scaleY, left, top, angle } = this;

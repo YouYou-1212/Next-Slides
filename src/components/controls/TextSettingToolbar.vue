@@ -48,7 +48,28 @@
       <div class="divider"></div>
 
       <!-- 对齐方式 -->
-      <button @click="setTextAlign('left')" :class="{ active: textAlign === 'left' }" title="左对齐">
+      <div class="align-control">
+        <button @click="showAlignMenu = !showAlignMenu" :class="{ active: showAlignMenu }" title="对齐方式">
+          <i class="fas fa-align-left"></i>
+        </button>
+        <div v-if="showAlignMenu" class="align-menu">
+          <div class="align-menu-inner">
+            <button @click="setTextAlign('left')" :class="{ active: textAlign === 'left' }" title="左对齐">
+              <i class="fas fa-align-left"></i>
+            </button>
+            <button @click="setTextAlign('center')" :class="{ active: textAlign === 'center' }" title="居中对齐">
+              <i class="fas fa-align-center"></i>
+            </button>
+            <button @click="setTextAlign('right')" :class="{ active: textAlign === 'right' }" title="右对齐">
+              <i class="fas fa-align-right"></i>
+            </button>
+            <button @click="setTextAlign('justify')" :class="{ active: textAlign === 'justify' }" title="分散对齐">
+              <i class="fas fa-align-justify"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- <button @click="setTextAlign('left')" :class="{ active: textAlign === 'left' }" title="左对齐">
         <i class="fas fa-align-left"></i>
       </button>
       <button @click="setTextAlign('center')" :class="{ active: textAlign === 'center' }" title="居中对齐">
@@ -56,6 +77,19 @@
       </button>
       <button @click="setTextAlign('right')" :class="{ active: textAlign === 'right' }" title="右对齐">
         <i class="fas fa-align-right"></i>
+      </button>
+      <button @click="setTextAlign('justify')" :class="{ active: textAlign === 'justify' }" title="分散对齐">
+        <i class="fas fa-align-justify"></i>
+      </button> -->
+
+      <div class="divider"></div>
+
+      <!-- 列表控制 -->
+      <button @click="toggleUnorderedList" :class="{ active: isUnorderedList }" title="无序列表">
+        <i class="fas fa-list-ul"></i>
+      </button>
+      <button @click="toggleOrderedList" :class="{ active: isOrderedList }" title="有序列表">
+        <i class="fas fa-list-ol"></i>
       </button>
 
       <div class="divider"></div>
@@ -106,7 +140,6 @@ const position = ref({ top: 0, left: 0 });
 const showColorPicker = ref(false);
 const showBgColorPicker = ref(false);
 const showBoxBgColorPicker = ref(false); // 文本框背景色选择器状态
-
 // 文本样式状态
 const isBold = ref(false);
 const isItalic = ref(false);
@@ -116,8 +149,12 @@ const textColor = ref('#000000');
 const textBgColor = ref('transparent'); // 文本背景颜色
 const boxBgColor = ref('transparent'); // 文本框背景颜色
 const textAlign = ref('left');
+const showAlignMenu = ref(false);
 const fontFamily = ref('Arial');
 const textStyle = ref('normal'); // 文本样式
+
+const isUnorderedList = ref(false);
+const isOrderedList = ref(false);
 
 
 // 文本样式选项
@@ -186,6 +223,9 @@ const updateTextStyleState = () => {
   boxBgColor.value = textObj.backgroundColor || 'transparent'; // 获取文本框背景颜色
   textAlign.value = textObj.textAlign || 'left';
   fontFamily.value = textObj.fontFamily || 'Arial';
+  // 更新列表状态
+  isUnorderedList.value = textObj.listStyle === 'unordered';
+  isOrderedList.value = textObj.listStyle === 'ordered';
 
   // 根据文本属性推断样式
   if (textObj.fontSize >= 40) {
@@ -288,7 +328,7 @@ const setBoxBgColor = (color: string) => {
   textObj.set('backgroundColor', color);
   boxBgColor.value = color;
   showBoxBgColorPicker.value = false;
-  props.canvasManager?.canvas.renderAll();
+  // props.canvasManager?.canvas.requestRenderAll();
 };
 
 // 设置文本对齐方式
@@ -298,8 +338,42 @@ const setTextAlign = (align: string) => {
   const textObj = targetObject.value as any;
   textObj.set('textAlign', align);
   textAlign.value = align;
-  props.canvasManager?.canvas.renderAll();
+  showAlignMenu.value = false;
+  // props.canvasManager?.canvas.requestRenderAll();
 };
+
+
+// 添加切换列表的方法
+const toggleUnorderedList = () => {
+  if (!targetObject.value) return;
+  const textObj = targetObject.value as any;
+  if (typeof textObj.setListStyle === 'function') {
+    isUnorderedList.value = !isUnorderedList.value;
+    if (isUnorderedList.value) {
+      isOrderedList.value = false;
+      textObj.setListStyle('unordered');
+    } else {
+      textObj.setListStyle('none');
+    }
+    // props.canvasManager?.canvas.renderAll();
+  }
+};
+
+const toggleOrderedList = () => {
+  if (!targetObject.value) return;
+  const textObj = targetObject.value as any;
+  if (typeof textObj.setListStyle === 'function') {
+    isOrderedList.value = !isOrderedList.value;
+    if (isOrderedList.value) {
+      isUnorderedList.value = false;
+      textObj.setListStyle('ordered');
+    } else {
+      textObj.setListStyle('none');
+    }
+    props.canvasManager?.canvas.renderAll();
+  }
+};
+
 
 // 更改字体
 const changeFontFamily = () => {
@@ -433,6 +507,11 @@ onMounted(() => {
       showColorPicker.value = false;
       showBgColorPicker.value = false;
       showBoxBgColorPicker.value = false;
+    }
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.composedPath().some(el => (el as HTMLElement).classList?.contains('align-control'))) {
+      showAlignMenu.value = false;
     }
   });
 });
@@ -747,5 +826,40 @@ button[title]:hover::after {
   bottom: 0;
   background-color: var(--bg-color, transparent);
   border-radius: 2px;
+}
+
+.align-control {
+  position: relative;
+}
+
+.align-menu {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 4px;
+  z-index: 1001;
+  margin-bottom: 8px;
+}
+
+.align-menu button i.fas {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.align-menu-inner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+
+.align-menu button {
+  /* width: 100%; */
+  justify-content: flex-start;
+  padding-left: 8px;
 }
 </style>

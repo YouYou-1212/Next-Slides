@@ -2,8 +2,8 @@
 
 export const PAGE_SIZE = {
   FRAME: {
-    WIDTH: 579,
-    HEIGHT: 326,
+    WIDTH: 426.67, 
+    HEIGHT: 240,  
   },
   PAGE_FRAME: {
     WIDTH: 1280,
@@ -52,6 +52,8 @@ export const COLORS = {
   BORDER: {
     DEFAULT: "transparent",
     HOVER: "#3564FF",
+    SLIDES_HOVER: "#2ecc71",
+    SLIDES_SELECTED: "#2ecc71",
     SELECTED: "#3564FF",
     UNSELECTED: "#747C87",  // 添加未选中状态的颜色
   },
@@ -80,6 +82,7 @@ export const STYLES = {
   CORNER: {
     STYLE: "circle" as "rect" | "circle",
     COLOR: COLORS.PRIMARY,
+    SLIDES_COLOR: COLORS.BORDER.SLIDES_SELECTED,
     SIZE: SIZES.CORNER_SIZE,
     TRANSPARENT: false,
   },

@@ -5,11 +5,6 @@ import { EventBus, EventTypes } from "./utils/EventBus";
 </script>
 
 <template>
-  <!-- <NextEditor 
-    v-model:controlPanelCollapsed="controlPanelCollapsed"
-    :control-panel-data="controlPanelData"
-    :show-control-panel="showControlPanel"
-  /> -->
   <router-view v-slot="{ Component, route }">
     <component 
       :is="Component" 

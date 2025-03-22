@@ -29,8 +29,8 @@ export class CustomText extends fabric.IText {
             backgroundColor: 'red',  // 文本框背景色
             textBackgroundColor: 'blue',  // 文字背景色
             padding: 10,  // 文本内边距
-            textAlign: 'left', // 固定左对齐
-            width: 800, // 固定宽度
+            textAlign: 'justify', // 固定左对齐
+            width: 200, // 固定宽度
             height: 300, // 固定宽度
             originY: 'top',  // 固定原点在顶部
             splitByGrapheme: true, // 支持复杂字符
@@ -43,6 +43,10 @@ export class CustomText extends fabric.IText {
         };
 
         super(text, { ...defaults });
+
+        
+        this.set('listStyle' ,  'none')
+
         // 保存初始尺寸
         this._originalWidth = this.width;
         this._originalHeight = this.height;
@@ -50,16 +54,88 @@ export class CustomText extends fabric.IText {
         this._minFontSize = defaults._minFontSize || 11;
         this.on('scaling', this.handleScaling.bind(this));
         // 添加移动事件监听
-        this.on('moving', this.handleMoving.bind(this)); 
+        this.on('moving', this.handleMoving.bind(this));
         // 使用 mouseup 事件代替不存在的 moved 事件
         this.on('mouseup', this.handleMoveEnd.bind(this));
         // 添加额外的事件以确保捕获所有可能的移动结束情况
         this.on('deselected', this.handleMoveEnd.bind(this));
+        this.on('editing:entered', this.handleEditingEntered.bind(this));
+        this.on('editing:exited', this.handleEditingExited.bind(this));
+        // this.on('removed', this.handleRemoved.bind(this));
     }
 
 
-     // 处理移动开始事件
-     private handleMoving(): void {
+
+    // 处理进入编辑状态
+    private handleEditingEntered(): void {
+        document.addEventListener('keydown', this.handleEditingKeyDown);
+    }
+
+    // 处理退出编辑状态
+    private handleEditingExited(): void {
+        document.removeEventListener('keydown', this.handleEditingKeyDown);
+    }
+
+
+    // 处理编辑状态下的键盘事件
+    private handleEditingKeyDown = (e: KeyboardEvent): void => {
+        // 只处理编辑状态下的事件
+        if (!this.isEditing) return;
+        // 处理复制事件 (Ctrl+C)
+        if (e.ctrlKey && e.code === 'KeyC') {
+            // this.handleCopy(e);
+        }
+        // 处理粘贴事件 (Ctrl+V)
+        if (e.ctrlKey && e.code === 'KeyV') {
+            // this.handlePaste(e);
+        }
+        // 处理回车键
+        if (e.code === 'Enter' || e.code === 'NumpadEnter' || e.key === 'Enter' || e.keyCode === 13) {
+            this.handleEnterKey(e);
+        }
+    }
+
+
+
+    // 处理回车键
+    private handleEnterKey(e: KeyboardEvent): void {
+        // e.preventDefault();
+        // 插入换行符并更新光标位置
+        // this.insertTextAtCursor('\n');
+        this.updateTextDimensions();
+        console.log('输入换行符:', this);
+    }
+
+
+    private insertTextAtCursor(text: string): void {
+        // 获取当前选中的文本范围
+        const selectionStart = this.selectionStart || 0;
+        const selectionEnd = this.selectionEnd || 0;
+        // 插入文本
+        const newText = this.text.slice(0, selectionStart) + text + this.text.slice(selectionEnd);
+        this.text = newText;
+
+        // 更新光标位置
+        this.selectionStart = selectionStart + text.length;
+        this.selectionEnd = selectionStart + text.length;
+    }
+
+    // 更新文本框尺寸和渲染
+    private updateTextDimensions(): void {
+        // 重新计算尺寸
+        this._skipDimension = false;
+        this.initDimensions();
+        this.setCoords();
+
+        // 确保文本渲染
+        this.dirty = true;
+        this.canvas?.requestRenderAll();
+        console.log('updateTextDimensions:', this);
+    }
+
+
+    // 处理移动开始事件
+    private handleMoving(): void {
         this._isMoving = true;
         console.log('控件开始移动');
     }
@@ -144,7 +220,7 @@ export class CustomText extends fabric.IText {
             const ratio = Math.min(containerWidthRatio, containerHeightRatio);
             const newFontSize = Math.max(Number((this.fontSize * ratio).toFixed(3)), this._minFontSize);
             console.log('文本超出容器，缩小字体到:', newFontSize);
-            this.set('fontSize', newFontSize);       
+            this.set('fontSize', newFontSize);
             // 在设置新的字体大小后，确保同步所有文本片段的样式
             this.syncTextStyles();
         } else if (props && oldWidth && oldHeight) {
@@ -159,14 +235,14 @@ export class CustomText extends fabric.IText {
                 // 放大文字
                 const newFontSize = Math.min(Number((this.fontSize * scaleFactor).toFixed(3)), this._originalFontSize);
                 console.log('放大字体到:', newFontSize);
-                this.set('fontSize', newFontSize);       
+                this.set('fontSize', newFontSize);
                 // 在设置新的字体大小后，确保同步所有文本片段的样式
                 this.syncTextStyles();
             } else if (scaleFactor < 1 && (containerWidthRatio < 1 || containerHeightRatio < 1)) {
                 // 缩小文字
                 const newFontSize = Math.max(Number((this.fontSize * scaleFactor).toFixed(3)), this._minFontSize);
                 console.log('缩小字体到:', newFontSize);
-                this.set('fontSize', newFontSize);        
+                this.set('fontSize', newFontSize);
                 // 在设置新的字体大小后，确保同步所有文本片段的样式
                 this.syncTextStyles();
             }

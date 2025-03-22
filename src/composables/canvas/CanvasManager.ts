@@ -161,7 +161,7 @@ export class CanvasManager {
     setCanvasManager(this);
 
     // 导入默认模板
-    this.importCanvasFromJSON(defaultTemplate);
+    // this.importCanvasFromJSON(defaultTemplate);
   }
 
 

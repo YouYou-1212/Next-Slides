@@ -10,7 +10,7 @@ const routes: Array<RouteRecordRaw> = [
     component: NextEditor
   },
   {
-    path: '/test-page',
+    path: '/test',
     name: 'TestPage',
     component: TestPage
   }

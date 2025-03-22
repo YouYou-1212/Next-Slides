@@ -5,7 +5,9 @@ import Sidebar from "../components/layout/Sidebar.vue";
 import BaseCanvas from "../components/layout/BaseCanvas.vue";
 import ControlPanel from "../components/layout/ControlPanel.vue";
 import TextSettingToolbar from "../components/controls/TextSettingToolbar.vue";
-import { useSettingToolsHandle } from "../composables/menu/setting-tools/SettingToolsHandle";
+import ImageSettingToolbar from "../components/controls/ImageSettingToolbar.vue";
+import { useSettingToolsHandle } from "../composables/menu/setting-tools/TextSettingToolsHandle";
+import { useImageSettingToolsHandle } from "../composables/menu/setting-tools/ImageSettingToolsHandle";
 import { EventBus, EventTypes } from "../utils/EventBus";
 
 // const props = defineProps<{
@@ -56,6 +58,8 @@ const canvasManager = computed(() => {
 // 使用设置工具处理器
 const { textSettingToolbarVisible, textSettingToolbarData } =
     useSettingToolsHandle(canvasManager);
+const { imageSettingToolbarVisible, imageSettingToolbarData } =
+    useImageSettingToolsHandle(canvasManager);
 
 
 const updateControlPanelCollapsed = (value: boolean) => {
@@ -170,6 +174,9 @@ watch(controlPanelCollapsed, (newValue) => {
                 <!-- 文本设置工具栏 -->
                 <TextSettingToolbar v-if="textSettingToolbarVisible" :canvas-manager="canvasManager"
                     :panel-data="textSettingToolbarData" />
+                <!-- 图片设置工具栏 -->
+                <ImageSettingToolbar v-if="imageSettingToolbarVisible" :canvas-manager="canvasManager"
+                    :panel-data="imageSettingToolbarData" />
             </div>
 
             <!-- 添加临时预览画布 -->
@@ -224,3 +231,4 @@ watch(controlPanelCollapsed, (newValue) => {
     /* 确保浮动面板在画布上方 */
 }
 </style>
+../composables/menu/setting-tools/TextSettingToolsHandle

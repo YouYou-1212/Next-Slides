@@ -11,7 +11,7 @@
       </div>
       <div class="panel-body">
         <!-- 动态加载组件 -->
-        <component :is="currentComponent" v-if="currentComponent" :canvas="canvasData.canvas"
+        <component :is="currentComponent" v-if="currentComponent" :canvas="canvasData.canvas" :action="panelAction"
           :target="canvasData.target" :position="canvasData.position" :canvasManager="canvasData.canvasManager"></component>
       </div>
     </div>
@@ -36,6 +36,7 @@ const emit = defineEmits<{
 
 const currentComponent = shallowRef<any>(null);
 const panelType = ref<string>('');
+const panelAction = ref<string>('');
 const canvasData = ref<any>({
   canvas: null,
   target: null,
@@ -46,6 +47,7 @@ const canvasData = ref<any>({
 watch(() => props.panelData, (newData) => {
   if (newData) {
     panelType.value = newData.type;
+    panelAction.value = newData.action;
     canvasData.value = {
       canvas: newData.canvas,
       target: newData.target,
@@ -73,11 +75,14 @@ const closePanel = () => {
 // 根据面板类型计算标题
 const panelTitle = computed(() => {
   switch (panelType.value) {
-    case 'background-image':
+    case EventTypes.PANEL_TYPE.BACKGROUND_IMAGE:
       return '更换背景图片';
-    case 'background-color':
+    case EventTypes.PANEL_TYPE.BACKGROUND_COLOR:
       return '更换背景颜色';
-    case 'insert-image':
+    case EventTypes.PANEL_TYPE.INSERT_IMAGE:
+      if(panelAction.value && panelAction.value  === EventTypes.PANEL_ACTION.REPLACE_IMAGE){
+        return '替换图片';
+      }
       return '插入图片';
     default:
       return '扩展面板';

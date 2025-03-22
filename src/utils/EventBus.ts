@@ -12,11 +12,17 @@ export const EventTypes = {
     OPEN: 'open-control-panel',
     SHOW_TEXT_SETTING_TOOLBAR: 'control-panel:show-text-toolbar',
     HIDE_TEXT_SETTING_TOOLBAR: 'control-panel:hide-text-setting-toolbar',
+    SHOW_IMAGE_SETTING_TOOLBAR: 'control-panel:show-image-toolbar',
+    HIDE_IMAGE_SETTING_TOOLBAR: 'control-panel:hide-image-setting-toolbar',
   },
   PANEL_TYPE: {
     BACKGROUND_IMAGE: 'background-image',
     BACKGROUND_COLOR: 'background-color',
     INSERT_IMAGE: 'insert-image',
+  },
+  PANEL_ACTION: {
+    //替换图片
+    REPLACE_IMAGE: 'replace-image',
   },
   // 添加画布背景变化事件
   CANVAS: {

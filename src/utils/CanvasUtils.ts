@@ -249,48 +249,74 @@ export function isPointInObject(
  * @param borderWidth 边框宽度，默认为1
  * @returns 是否在边框上
  */
-export function isPointOnRectBorder(
+export function isPointOnRectBorder(canvas: CustomCanvas,
   point: { x: number; y: number },
   rect: { left: number; top: number; width: number; height: number },
-  borderWidth: number = 1
+  borderWidth: number = 10
 ): boolean {
+  // 获取画布的视口变换和缩放
+  const vpt = canvas.viewportTransform!;
+  const zoom = canvas.getZoom();
+
+  // 将屏幕坐标转换为画布坐标
+  const canvasPoint = fabric.util.transformPoint(
+    new fabric.Point(point.x, point.y),
+    fabric.util.invertTransform(vpt)
+  );
+
   // 计算矩形的四个边界
   const right = rect.left + rect.width;
   const bottom = rect.top + rect.height;
 
-  // 计算内部矩形（不包含边框）的边界
-  const innerLeft = rect.left + borderWidth;
-  const innerTop = rect.top + borderWidth;
-  const innerRight = right - borderWidth;
-  const innerBottom = bottom - borderWidth;
+  // 根据缩放比例调整边框宽度
+  const adjustedBorderWidth = borderWidth / zoom;
+  // 计算边框的一半宽度
+  const halfBorderWidth = (adjustedBorderWidth) / 2;
 
-  // 检查点是否在矩形范围内
-  const isInsideRect =
-    point.x >= rect.left &&
-    point.x <= right &&
-    point.y >= rect.top &&
-    point.y <= bottom;
+  const offsetCorrection = 0.5;
+  const outerLeft = rect.left - halfBorderWidth + offsetCorrection;
+  const outerTop = rect.top - halfBorderWidth + offsetCorrection;
+  const outerRight = right + halfBorderWidth + offsetCorrection;
+  const outerBottom = bottom + halfBorderWidth + offsetCorrection;
+
+  const innerLeft = rect.left + halfBorderWidth + offsetCorrection;
+  const innerTop = rect.top + halfBorderWidth + offsetCorrection;
+  const innerRight = right - halfBorderWidth + offsetCorrection;
+  const innerBottom = bottom - halfBorderWidth + offsetCorrection;
+
+  // 检查点是否在外部矩形范围内
+  const isInsideOuterRect =
+    canvasPoint.x >= outerLeft &&
+    canvasPoint.x <= outerRight &&
+    canvasPoint.y >= outerTop &&
+    canvasPoint.y <= outerBottom;
 
   // 检查点是否在内部矩形范围内
   const isInsideInnerRect =
-    point.x >= innerLeft &&
-    point.x <= innerRight &&
-    point.y >= innerTop &&
-    point.y <= innerBottom;
+    canvasPoint.x >= innerLeft &&
+    canvasPoint.x <= innerRight &&
+    canvasPoint.y >= innerTop &&
+    canvasPoint.y <= innerBottom;
+
+  // console.log("计算结果：", "鼠标位置坐标：" + canvasPoint,
+  //   "矩形外部边框：" + "左上角坐标： X轴" + outerLeft + "  Y轴" + outerTop + " 右下角坐标： X轴" + outerRight + "  Y轴" + outerBottom,
+  //   "矩形内部边框：" + "左上角坐标： X轴" + innerLeft + "  Y轴" + innerTop + " 右下角坐标： X轴" + innerRight + "  Y轴" + innerBottom,
+  //   "当前坐标是否在外边框内：" + isInsideOuterRect,
+  //   "当前坐标是否在内边框外：" + !isInsideInnerRect,);
 
   // 如果点在矩形内但不在内部矩形内，则点在边框上
-  return isInsideRect && !isInsideInnerRect;
+  return isInsideOuterRect && !isInsideInnerRect;
 }
 
 
- /**
-   * 查找鼠标位置下的目标对象
-   */
- export function findTargetObject(canvas:CustomCanvas, point: fabric.Point) {
+/**
+  * 查找鼠标位置下的目标对象
+  */
+export function findTargetObject(canvas: CustomCanvas, point: fabric.Point) {
   const targets = findObjectsByPosition(canvas, point);
-  
   const slidesTarget = targets.find((obj) => {
-    return obj instanceof Slides && isPointOnRectBorder(point, obj, 10);
+    const isPointOnBorder = isPointOnRectBorder(canvas, point, obj, 10)
+    return obj instanceof Slides && isPointOnBorder;
   });
 
   let nonFrameTarget = null;
@@ -312,9 +338,6 @@ export function isPointOnRectBorder(
 let thumbnailGenerationLock = false;
 const thumbnailQueue: Array<() => Promise<void>> = [];
 /**
- * 高效可靠地生成指定矩形区域内的画布缩略图
- * 使用原生Canvas API直接从渲染后的画布中提取像素
- *
  * @param canvas 源画布
  * @param thumbnailCanvas 目标缩略图画布
  * @param rect 要截取的矩形区域，如果不提供则使用整个画布
@@ -400,7 +423,7 @@ export async function generateReliableThumbnail(
         thumbnailCanvas.height
       );
     } catch (e) {
-      console.error("生成可靠缩略图失败:", e);
+      console.error("生成缩略图失败:", e);
       return;
     } finally {
       // 恢复原始视口状态

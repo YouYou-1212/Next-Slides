@@ -20,6 +20,10 @@ export class TextControl extends fabric.IText {
   //拖动状态标记
   private _isMoving: boolean = false;
 
+  // 列表样式属性
+  public listStyle: 'none' | 'ordered' | 'unordered' = 'none';
+  private _listItemPrefix: string = '';
+
   constructor(text: string, options: any) {
     const defaultOptions = {
       fill: "#333333",
@@ -42,6 +46,12 @@ export class TextControl extends fabric.IText {
     };
 
     super(text, defaultOptions);
+
+    // 如果选项中包含列表样式，则应用它
+    if (options && options.listStyle) {
+      this.listStyle = options.listStyle;
+      this._applyListStyle();
+    }
 
     this._hoverBorderColor = options.hoverBorderColor || COLORS.BORDER.HOVER;
     this.lineWidth = options.lineWidth || 1;
@@ -71,7 +81,9 @@ export class TextControl extends fabric.IText {
     this.on('moving', this.handleMoving.bind(this));
     this.on('mouseup', this.handleMoveEnd.bind(this));
     this.on('deselected', this.handleMoveEnd.bind(this));
+    this.on('removed', this.handleRemoved.bind(this));
   }
+
 
   // 处理进入编辑状态
   private handleEditingEntered(): void {
@@ -101,6 +113,61 @@ export class TextControl extends fabric.IText {
     }
   }
 
+
+
+  // 应用列表样式
+  private _applyListStyle(): void {
+    if (this.listStyle === 'none') {
+      // 移除列表前缀
+      this._removeListPrefix();
+    } else {
+      // 添加列表前缀
+      this._addListPrefix();
+    }
+  }
+
+  // 添加列表前缀
+  private _addListPrefix(keepCursor = false): void {
+    const cursorPos = this.selectionStart;
+    const lines = this.text.split('\n');
+    let newCursorOffset = 0;
+
+    const prefixedLines = lines.map((line, index) => {
+      // 移除旧前缀
+      const cleanedLine = line.replace(/^(\d+\.\s|\•\s)/, '');
+      // 添加新前缀
+      if (this.listStyle === 'ordered') {
+        newCursorOffset += `${index + 1}. `.length;
+        return `${index + 1}. ${cleanedLine}`;
+      } else if (this.listStyle === 'unordered') {
+        newCursorOffset += 2;
+        return `• ${cleanedLine}`;
+      }
+      return cleanedLine;
+    });
+
+    this.text = prefixedLines.join('\n');
+
+    // 保持光标位置
+    if (keepCursor) {
+      this.selectionStart = cursorPos + newCursorOffset;
+      this.selectionEnd = cursorPos + newCursorOffset;
+    }
+
+    this.updateTextDimensions();
+  }
+
+  // 移除列表前缀
+  private _removeListPrefix(): void {
+    // 分割文本行
+    const lines = this.text.split('\n');
+    // 移除每行的前缀
+    const cleanLines = lines.map(line => {
+      return line.replace(/^(\d+\.\s|\•\s)/, '');
+    });
+    // 更新文本
+    this.text = cleanLines.join('\n');
+  }
 
 
   // 重写渲染方法，添加自定义边框
@@ -210,7 +277,6 @@ export class TextControl extends fabric.IText {
     // 获取选中的文本
     const selectedText = this.getSelectedText();
     if (selectedText) {
-      // 使用Clipboard API复制文本
       navigator.clipboard.writeText(selectedText)
         .then(() => {
           console.log('文本已成功复制到剪贴板:', selectedText);
@@ -224,8 +290,31 @@ export class TextControl extends fabric.IText {
   // 处理回车键
   private handleEnterKey(e: KeyboardEvent): void {
     e.preventDefault();
-    // 插入换行符并更新光标位置
+    // 获取当前光标位置
+    const cursorPosition = this.selectionStart || 0;
+
+    // 获取当前行号
+    const lines = this.text.split('\n');
+    let currentLineIndex = 0;
+    let charCount = 0;
+    for (let i = 0; i < lines.length; i++) {
+      charCount += lines[i].length + 1; // +1 for the newline character
+      if (charCount > cursorPosition) {
+        currentLineIndex = i;
+        break;
+      }
+    }
+
+    // 插入换行符
     this.insertTextAtCursor('\n');
+
+    // 如果是列表项，自动添加前缀
+    if (this.listStyle !== 'none') {
+      const prefix = this.listStyle === 'ordered' ? `${currentLineIndex + 2}. ` : '• ';
+      this.insertTextAtCursor(prefix);
+    }
+
+    // 更新文本尺寸
     this.updateTextDimensions();
   }
 
@@ -241,7 +330,23 @@ export class TextControl extends fabric.IText {
     // 更新光标位置
     this.selectionStart = selectionStart + text.length;
     this.selectionEnd = selectionStart + text.length;
+
+
+    // 确保hiddenTextarea同步更新
+    if (this.hiddenTextarea) {
+      this.hiddenTextarea.value = this.text;
+      this.hiddenTextarea.selectionStart = this.selectionStart;
+      this.hiddenTextarea.selectionEnd = this.selectionEnd;
+    }
+
+    this.updateTextDimensions();
   }
+
+  updateFromTextArea(): void {
+    super.updateFromTextArea();
+  }
+
+
 
   // 更新文本框尺寸和渲染
   private updateTextDimensions(): void {
@@ -318,37 +423,6 @@ export class TextControl extends fabric.IText {
   }
 
 
-  // applyTextStyle(style: any): void {
-  //   const oldWidth = this.width;
-  //   const oldHeight = this.height;
-  //   if (typeof style === 'object') {
-  //     for (const prop in style) {
-  //       if (prop === "fontSize") {
-  //         this.setFontSize(style[prop], true);
-  //       }
-  //       this._set(prop, style[prop]);
-  //     }
-  //   }
-  //   this._skipDimension = false;
-
-  //   // 重新计算文本宽度和高度
-  //   const newWidth = this.calcTextWidth();
-  //   const newHeight = this.calcTextHeight();
-  //   if (newWidth > oldWidth) {
-  //     this.set('width', newWidth);
-  //   }
-  //   // 更新高度
-  //   this.set('height', newHeight);
-  //   // 重新计算尺寸和边框
-  //   this.initDimensions();
-  //   this.setCoords();
-
-  //   // 确保文本渲染
-  //   this.dirty = true;
-  //   this.canvas?.requestRenderAll();
-  // }
-
-
   // 设置悬停时的边框颜色
   setHoverBorderColor(color: string) {
     this._hoverBorderColor = color;
@@ -375,13 +449,13 @@ export class TextControl extends fabric.IText {
 
     const containerWidthRatio = containerWidth / textWidth;
     const containerHeightRatio = containerHeight / textHeight;
-    console.log('容器宽度比例:', containerWidthRatio, '容器高度比例:', containerHeightRatio);
+    // console.log('容器宽度比例:', containerWidthRatio, '容器高度比例:', containerHeightRatio);
 
     // 如果文本超出容器，需要缩小
     if (containerWidthRatio < 1 || containerHeightRatio < 1) {
       const ratio = Math.min(containerWidthRatio, containerHeightRatio);
       const newFontSize = Math.max(Number((this.fontSize * ratio).toFixed(3)), this._minFontSize);
-      console.log('文本超出容器，缩小字体到:', newFontSize);
+      // console.log('文本超出容器，缩小字体到:', newFontSize);
       this.set('fontSize', newFontSize);
       // this.syncTextStyles();
     } else if (props && oldWidth && oldHeight) {
@@ -390,42 +464,23 @@ export class TextControl extends fabric.IText {
       const scaleY = props.height ? props.height / oldHeight : 1;
       const scaleFactor = Math.max(scaleX, scaleY);
 
-      console.log('缩放因子:', scaleFactor, '当前字号:', this.fontSize);
+      // console.log('缩放因子:', scaleFactor, '当前字号:', this.fontSize);
 
       if (scaleFactor > 1) {
         // 放大文字
         const newFontSize = Math.min(Number((this.fontSize * scaleFactor).toFixed(3)), this._originalFontSize);
-        console.log('放大字体到:', newFontSize);
+        // console.log('放大字体到:', newFontSize);
         this.set('fontSize', newFontSize);
         // this.syncTextStyles();
       } else if (scaleFactor < 1 && (containerWidthRatio < 1 || containerHeightRatio < 1)) {
         // 缩小文字
         const newFontSize = Math.max(Number((this.fontSize * scaleFactor).toFixed(3)), this._minFontSize);
-        console.log('缩小字体到:', newFontSize);
+        // console.log('缩小字体到:', newFontSize);
         this.set('fontSize', newFontSize);
         // this.syncTextStyles();
       }
     }
   }
-
-
-  // // 同步所有文本片段的样式
-  // private syncTextStyles(): void {
-  //   // 检查是否有样式对象
-  //   if (!this.styles) return;
-  //   const currentFontSize = this.fontSize || 40;
-  //   // 遍历所有行和字符的样式
-  //   for (const lineIndex in this.styles) {
-  //     for (const charIndex in this.styles[lineIndex]) {
-  //       // 更新每个字符的字体大小
-  //       if (this.styles[lineIndex][charIndex]) {
-  //         this.styles[lineIndex][charIndex].fontSize = currentFontSize;
-  //       }
-  //     }
-  //   }
-  //   console.log('已同步所有文本样式的字体大小:', currentFontSize);
-  // }
-
 
   // 处理缩放事件
   private handleScaling(): void {
@@ -478,28 +533,59 @@ export class TextControl extends fabric.IText {
     return this._isMoving;
   }
 
-  
+  public handleRemoved() {
+    EventBus.emit(EventTypes.CONTROL_PANEL.HIDE_TEXT_SETTING_TOOLBAR);
+  }
+
+
+  setText(text: string): this {
+    this.set('text', text);
+    // 如果有列表样式，应用列表样式
+    if (this.listStyle !== 'none') {
+      this._applyListStyle();
+    }
+    this.updateTextDimensions();
+    // // 更新文本尺寸
+    // this._skipDimension = false;
+    // this.initDimensions();
+    // this.setCoords();
+
+    // // 确保文本渲染
+    // this.dirty = true;
+    // this.canvas?.requestRenderAll();
+    return this;
+  }
+
+  // 设置列表样式
+  setListStyle(style: 'none' | 'ordered' | 'unordered'): void {
+    if (this.listStyle !== style) {
+      this.listStyle = style;
+      this._applyListStyle();
+    }
+  }
+
+
   toJSON() {
     return {
-     ...super.toJSON(),
-    type: TextControl.type,
-    _showBorder: this._showBorder,
-    _hoverBorderColor: this._hoverBorderColor,
-    lineWidth: this.lineWidth,
-    preventDistortion: this.preventDistortion,
-    _originalWidth: this._originalWidth,
-    _originalHeight: this._originalHeight,
-    _skipDimension: this._skipDimension,
-    _minFontSize: this._minFontSize,
-    _originalFontSize: this._originalFontSize,
-    _isMoving: this._isMoving,
+      ...super.toJSON(),
+      type: TextControl.type,
+      _showBorder: this._showBorder,
+      _hoverBorderColor: this._hoverBorderColor,
+      lineWidth: this.lineWidth,
+      preventDistortion: this.preventDistortion,
+      _originalWidth: this._originalWidth,
+      _originalHeight: this._originalHeight,
+      _skipDimension: this._skipDimension,
+      _minFontSize: this._minFontSize,
+      _originalFontSize: this._originalFontSize,
+      _isMoving: this._isMoving,
     };
   }
 
-toObject(propertiesToInclude: any[] = []): any{
-  return super.toObject([...propertiesToInclude, '_showBorder', '_hoverBorderColor', 'lineWidth', 'preventDistortion', 
-    '_originalWidth', '_originalHeight', '_skipDimension', '_minFontSize', '_originalFontSize', '_isMoving']);
-}
+  toObject(propertiesToInclude: any[] = []): any {
+    return super.toObject([...propertiesToInclude, '_showBorder', '_hoverBorderColor', 'lineWidth', 'preventDistortion',
+      '_originalWidth', '_originalHeight', '_skipDimension', '_minFontSize', '_originalFontSize', '_isMoving']);
+  }
 
 
   // 用于从JSON创建对象

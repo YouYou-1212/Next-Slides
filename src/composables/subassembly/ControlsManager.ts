@@ -188,7 +188,7 @@ export class ControlsManager {
         opacity: originalObject.opacity,
         ...options,
       });
-    } else if (objectType === "text" || originalObject instanceof TextControl) {
+    } else if (objectType === TextControl.type || originalObject instanceof TextControl) {
       // 处理文本对象
       const textObj = originalObject as fabric.Text;
       return this.addText({

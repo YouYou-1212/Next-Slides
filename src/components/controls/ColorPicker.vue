@@ -44,9 +44,27 @@
                     <input type="text" v-model="customColorText" @input="onColorTextChange" @blur="validateColorText"
                         class="color-text-input" placeholder="#RRGGBB">
                 </div>
-                <button class="apply-color-btn" @click="applyCustomColor">应用</button>
+               
             </div>
         </div>
+        <!-- 透明度设置 -->
+        <div class="color-category">
+            <div class="category-title">透明度</div>
+            <div class="opacity-control">
+                <input 
+                    type="range" 
+                    min="0" 
+                    max="1" 
+                    step="0.05" 
+                    v-model="currentOpacity" 
+                    @input="updateOpacity"
+                    class="opacity-slider"
+                />
+                <div class="opacity-value">{{ Math.round(currentOpacity * 100) }}%</div>
+            </div>
+        </div>
+
+        <button class="apply-color-btn" @click="applyCustomColor">应用</button>
     </div>
 </template>
 
@@ -56,14 +74,17 @@ import { ColorUtils } from '../../utils/ColorUtils';
 
 const props = defineProps<{
     color: string;
+    opacity?: number;
 }>();
 
 const emit = defineEmits<{
     (e: 'update:color', color: string): void;
-    (e: 'select', color: string): void;
+    (e: 'update:opacity', opacity: number): void;
+    (e: 'select', color: string, opacity: number): void;
 }>();
 
 const currentColor = ref(props.color);
+const currentOpacity = ref(props.opacity ?? 1);
 const customColorText = ref(props.color === 'transparent' ? '' : props.color);
 const colorPickerInput = ref<HTMLInputElement | null>(null);
 
@@ -79,12 +100,25 @@ watch(() => props.color, (newColor) => {
     customColorText.value = newColor === 'transparent' ? '' : newColor;
 });
 
+// 监听透明度变化
+watch(() => props.opacity, (newOpacity) => {
+    if (newOpacity !== undefined) {
+        currentOpacity.value = newOpacity;
+    }
+}, { immediate: true });
+
+// 更新透明度
+const updateOpacity = () => {
+    emit('update:opacity', currentOpacity.value);
+};
+
 // 选择颜色
 const selectColor = (color: string) => {
     currentColor.value = color;
     customColorText.value = color === 'transparent' ? '' : color;
     emit('update:color', color);
-    emit('select', color);
+    // 同时提交颜色和透明度
+    emit('select', color, currentOpacity.value);
 };
 
 // 颜色选择器变化事件
@@ -221,5 +255,51 @@ const applyCustomColor = () => {
 
 .apply-color-btn:hover {
     background-color: #40a9ff;
+}
+
+.opacity-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.opacity-slider {
+    flex: 1;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0), currentColor);
+    border-radius: 3px;
+    outline: none;
+}
+
+.opacity-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #1890ff;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+}
+
+.opacity-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #1890ff;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+}
+
+.opacity-value {
+    width: 40px;
+    font-size: 12px;
+    color: #666;
+    text-align: right;
 }
 </style>

@@ -48,7 +48,7 @@ export class Slides extends fabric.Rect {
   protected initializeControls() {
     // 设置控制点样式
     this.cornerSize = STYLES.CORNER.SIZE;
-    this.cornerColor = STYLES.CORNER.COLOR;
+    this.cornerColor = STYLES.CORNER.SLIDES_COLOR;
     this.cornerStyle = STYLES.CORNER.STYLE;
     this.transparentCorners = STYLES.CORNER.TRANSPARENT;
 
@@ -263,6 +263,7 @@ export class Slides extends fabric.Rect {
 
   // 绘制自定义边框
   protected drawCustomBorder(ctx: CanvasRenderingContext2D) {
+    // console.log("【Slides】绘制自定义边框");
     if (!this.canvas) return;
     // 保存当前上下文状态
     ctx.save();

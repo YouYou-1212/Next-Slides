@@ -15,9 +15,10 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@vicons/*": ["node_modules/@vicons/*"]
     },
-    "types": ["vite/client", "vue"]
+    "types": ["vite/client", "vue" ]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
 }

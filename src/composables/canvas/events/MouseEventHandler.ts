@@ -6,6 +6,7 @@ import { EventManager } from "../EventManager";
 import { findObjectsByPosition, findTargetObject, isPointInObject, isPointOnRectBorder } from "../../../utils/CanvasUtils";
 import { Slides } from "../../slides/Slides";
 import type { CustomCanvas } from "../CustomCanvas";
+import { TextControl } from "../../../composables/subassembly/controls/TextControl";
 
 export class MouseEventHandler {
   private canvas: CustomCanvas;
@@ -193,15 +194,13 @@ export class MouseEventHandler {
    * @returns
    */
   private handleHoverIn(target: any) {
-    if (target.type === "text" && typeof target.showBorder === "function") {
+    if (target.type === TextControl.type && typeof target.showBorder === "function") {
       target.showBorder(true);
       return;
     }
-
     if (!target._originalCustomBorderColor) {
       this.saveOriginalState(target);
     }
-
     // 保存原始光标样式并设置为默认
     if (!target._originalHoverCursor) {
       target._originalHoverCursor = target.hoverCursor;
@@ -210,13 +209,12 @@ export class MouseEventHandler {
 
     const zoom = this.canvas.getZoom();
     const highlightProps: any = {
-      borderColor: COLORS.BORDER.HOVER,
+      borderColor: target instanceof Slides ? COLORS.BORDER.SLIDES_HOVER : COLORS.BORDER.HOVER,
       strokeWidth: SIZES.STROKE_WIDTH / zoom,
       borderScaleFactor: SIZES.BORDER_SCALE_FACTOR,
     };
-
-    if (target.type !== "text" && target.type !== "textbox") {
-      highlightProps.customBorderColor = COLORS.BORDER.HOVER;
+    if (target.type !== TextControl.type) {
+      highlightProps.customBorderColor = target instanceof Slides ? COLORS.BORDER.SLIDES_HOVER : COLORS.BORDER.HOVER;
     }
     target.set(highlightProps);
   }
@@ -227,7 +225,7 @@ export class MouseEventHandler {
    * @returns
    */
   private handleHoverOut(target: any) {
-    if (target.type === "text" && typeof target.showBorder === "function") {
+    if (target.type === TextControl.type && typeof target.showBorder === "function") {
       target.showBorder(false);
       return;
     }
@@ -257,7 +255,7 @@ export class MouseEventHandler {
         borderScaleFactor: target._originalBorderScaleFactor,
       };
 
-      if (target.type !== "text" && target.type !== "textbox") {
+      if (target.type !== TextControl.type) {
         restoreProps.customBorderColor = target._originalCustomBorderColor;
       }
 
