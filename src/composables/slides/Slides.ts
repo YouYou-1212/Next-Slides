@@ -27,7 +27,7 @@ export class Slides extends fabric.Rect {
     this.initEventHandlers();
 
     // 自定义边框颜色
-    this.customBorderColor = options.customBorderColor;
+    this.customBorderColor = options.customBorderColor || glassEffect.customBorderColor;
     // 初始化自定义控件列表
     this.customControls = options.customControls || [];
     // 初始化控件可见性映射

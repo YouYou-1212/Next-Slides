@@ -6,7 +6,7 @@ import type { CanvasManager } from "../CanvasManager";
 export class KeyboardEventHandler {
   private canvas: fabric.Canvas;
   private canvasManager: CanvasManager;
-  private isSpaceDragging = false;
+  // private isSpaceDragging = false;
   private clipboardObject: fabric.Object | null = null; // 存储复制的对象
 
   constructor(canvas: fabric.Canvas, canvasManager: CanvasManager) {
@@ -29,26 +29,16 @@ export class KeyboardEventHandler {
 
 
   private handleKeyDown(e: KeyboardEvent) {
-    if (e.code === "Space" && !this.isSpaceDragging) {
-      this.isSpaceDragging = true;
-      this.canvas.defaultCursor = "grab";
-      this.canvas.selection = false;
-      this.canvas.forEachObject((obj) => {
-        obj.selectable = false;
-        obj.evented = false;
-      });
+    if (e.code === "Space" && this.canvasManager.getDragMode() !== 'pan') {
+      // 使用 CanvasManager 的 setDragMode 方法设置为拖动模式
+      this.canvasManager.setDragMode('pan' , true);
     }
   }
 
   private handleKeyUp(e: KeyboardEvent) {
     if (e.code === "Space") {
-      this.isSpaceDragging = false;
-      this.canvas.defaultCursor = "default";
-      this.canvas.selection = true;
-      this.canvas.forEachObject((obj) => {
-        obj.selectable = true;
-        obj.evented = true;
-      });
+      // 使用 CanvasManager 的 setDragMode 方法恢复默认模式
+      this.canvasManager.setDragMode('default' , false);
     }
   }
 
@@ -94,7 +84,7 @@ export class KeyboardEventHandler {
 
     // 使用 ControlsManager 添加图片
     controlsManager
-      .addImage(url, {
+      .addImage(url, "" , {
         left: centerPoint.x,
         top: centerPoint.y,
         originX: "center",
@@ -277,7 +267,7 @@ export class KeyboardEventHandler {
   }
 
   public isInSpaceDragMode(): boolean {
-    return this.isSpaceDragging;
+    return this.canvasManager.getDragMode() === 'pan';
   }
 
   public destroy() {

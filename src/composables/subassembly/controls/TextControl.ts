@@ -545,14 +545,6 @@ export class TextControl extends fabric.IText {
       this._applyListStyle();
     }
     this.updateTextDimensions();
-    // // 更新文本尺寸
-    // this._skipDimension = false;
-    // this.initDimensions();
-    // this.setCoords();
-
-    // // 确保文本渲染
-    // this.dirty = true;
-    // this.canvas?.requestRenderAll();
     return this;
   }
 

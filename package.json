@@ -1,7 +1,7 @@
 {
-  "name": "next-slides-editor",
+  "name": "zhimu-editor",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,6 +12,7 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
     "@fortawesome/fontawesome-free": "^6.7.2",
+    "@vicons/ionicons5": "^0.13.0",
     "@vicons/material": "^0.13.0",
     "@vicons/utils": "^0.1.4",
     "@vitejs/plugin-basic-ssl": "^2.0.0",

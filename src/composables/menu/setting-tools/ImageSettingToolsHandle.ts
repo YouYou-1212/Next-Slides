@@ -58,7 +58,6 @@ export function useImageSettingToolsHandle(canvasManager: any) {
   
   // 监听事件，直接更新本地状态
   const handleShowImageSettingToolbar = (data: any) => {
-    console.log("handleShowImageSettingToolbar", data);
     imageSettingToolbarData.value = data;
     imageSettingToolbarVisible.value = true;
     if (imageSettingToolsHandle.value) {
@@ -75,17 +74,26 @@ export function useImageSettingToolsHandle(canvasManager: any) {
       imageSettingToolsHandle.value.getImageSettingToolbarData().value = null;
     }
   };
+
+
+  const handleUpdateImageSettingToolbar = (data: any) => {
+    imageSettingToolbarData.value = data;
+    imageSettingToolbarVisible.value = true;
+  };
   
   onMounted(() => {
     // 注册事件监听
     EventBus.on(EventTypes.CONTROL_PANEL.SHOW_IMAGE_SETTING_TOOLBAR, handleShowImageSettingToolbar);
     EventBus.on(EventTypes.CONTROL_PANEL.HIDE_IMAGE_SETTING_TOOLBAR, handleHideImageSettingToolbar);
+    EventBus.on(EventTypes.CONTROL_PANEL.UPDATE_IMAGE_SETTING_TOOLBAR, handleUpdateImageSettingToolbar);
+
   });
   
   onUnmounted(() => {
     // 移除事件监听
     EventBus.off(EventTypes.CONTROL_PANEL.SHOW_IMAGE_SETTING_TOOLBAR, handleShowImageSettingToolbar);
     EventBus.off(EventTypes.CONTROL_PANEL.HIDE_IMAGE_SETTING_TOOLBAR, handleHideImageSettingToolbar);
+    EventBus.off(EventTypes.CONTROL_PANEL.UPDATE_IMAGE_SETTING_TOOLBAR, handleUpdateImageSettingToolbar);
     
     if (imageSettingToolsHandle.value) {
       imageSettingToolsHandle.value.destroy();
@@ -95,7 +103,6 @@ export function useImageSettingToolsHandle(canvasManager: any) {
   
   return {
     imageSettingToolsHandle,
-    // 直接返回本地状态，而不是计算属性
     imageSettingToolbarVisible,
     imageSettingToolbarData
   };

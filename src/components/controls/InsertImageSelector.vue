@@ -16,7 +16,7 @@
       <h3 class="section-title">系统资源</h3>
       <div class="image-grid">
         <div v-for="(image, index) in systemImages" :key="index" class="image-item"
-          @click="insertImageFromUrl(image.url)">
+          @click="insertImageFromUrl(image.url, image.type)">
           <img :src="image.url" :alt="`系统图片 ${index + 1}`" class="thumbnail" />
         </div>
       </div>
@@ -48,7 +48,7 @@ import type { CanvasManager } from '../../composables/canvas/CanvasManager';
 import { EventTypes } from '../../utils/EventBus';
 
 // 添加系统资源列表
-const systemImages = ref<{ url: string }[]>([]);
+const systemImages = ref<{ url: string; type?: string }[]>([]);
 
 const props = defineProps<{
   canvas: fabric.Canvas;
@@ -77,11 +77,10 @@ const handleSelectImage = () => {
 const onFileSelected = (event: Event) => {
   const input = event.target as HTMLInputElement;
   if (input.files && input.files[0]) {
-    const file = input.files[0];
-    // 使用 URL.createObjectURL 创建本地URL
-    const objectUrl = URL.createObjectURL(file);
-    // console.log("文件选择器选择的内容为：", props.canvasManager, objectUrl);
-    props.canvasManager.getControlsManager().addImage(objectUrl);
+    const file = input.files[0]; 
+    const fileType = file.type;
+    const objectUrl = `${URL.createObjectURL(file)}`;
+    props.canvasManager.getControlsManager().addImage(objectUrl , fileType);
     input.value = '';
   }
 };
@@ -89,14 +88,11 @@ const onFileSelected = (event: Event) => {
 // 加载系统资源
 const loadSystemImages = async () => {
   try {
-    // 使用import.meta.glob导入所有SVG文件
     const svgContext = import.meta.glob('/public/svg/*.svg', { eager: true });
-    console.log("svgContext", svgContext);
     const images = Object.entries(svgContext).map(([path, module]: [string, any]) => ({
       url: module.default,
+      type: 'svg'
     }));
-    console.log("svgContext images", images);
-    
     systemImages.value = images;
   } catch (error) {
     console.error('加载系统资源失败:', error);
@@ -148,12 +144,12 @@ const loadMoreImages = () => {
 };
 
 // 从URL插入图片
-const insertImageFromUrl = (url: string) => {
+const insertImageFromUrl = (url: string, type?: string) => {
   if (!props.canvasManager) return;
   if(props.action && props.action === EventTypes.PANEL_ACTION.REPLACE_IMAGE){
     //如果action为替换图片，则替换 props.target的图片
-    if (props.target && props.target.replaceImage) {
-      props.target.replaceImage(url);
+    if (props.target && props.target.replacePicture) {
+      props.target.replacePicture(url);
     }
   }else{
     props.canvasManager.getControlsManager().addImage(url);

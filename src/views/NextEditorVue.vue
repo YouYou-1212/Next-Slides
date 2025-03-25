@@ -4,6 +4,7 @@ import Toolbar from "../components/layout/Toolbar.vue";
 import Sidebar from "../components/layout/Sidebar.vue";
 import BaseCanvas from "../components/layout/BaseCanvas.vue";
 import ControlPanel from "../components/layout/ControlPanel.vue";
+import BottomControlToolbar from "../components/controls/BottomControlToolbar.vue";
 import TextSettingToolbar from "../components/controls/TextSettingToolbar.vue";
 import ImageSettingToolbar from "../components/controls/ImageSettingToolbar.vue";
 import { useSettingToolsHandle } from "../composables/menu/setting-tools/TextSettingToolsHandle";
@@ -171,6 +172,9 @@ watch(controlPanelCollapsed, (newValue) => {
                 <ControlPanel v-if="showControlPanel" v-model:collapsed="controlPanelCollapsed"
                     :panel-data="controlPanelData" @update:collapsed="handleControlPanelCollapsedChange" />
 
+                <!-- 底部控制工具栏 -->
+                <BottomControlToolbar :canvas-manager="canvasManager" />
+
                 <!-- 文本设置工具栏 -->
                 <TextSettingToolbar v-if="textSettingToolbarVisible" :canvas-manager="canvasManager"
                     :panel-data="textSettingToolbarData" />
@@ -230,5 +234,8 @@ watch(controlPanelCollapsed, (newValue) => {
     z-index: 10;
     /* 确保浮动面板在画布上方 */
 }
+
+.floating-panels :deep(.bottom-control-toolbar) {
+    pointer-events: auto;
+}
 </style>
-../composables/menu/setting-tools/TextSettingToolsHandle

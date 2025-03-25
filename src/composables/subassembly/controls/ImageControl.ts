@@ -33,7 +33,9 @@ export class ImageControl extends fabric.FabricImage {
         padding: 0,
         ...options
       };
+      // fabric.loadSVGFromURL
       ImageControl.fromURL(url, { crossOrigin: 'anonymous' }, defaultOptions).then((fabricImage: any) => {
+        // data:image/svg+xml,
         if (options.fillColor !== undefined) {
           fabricImage._fillColor = options.fillColor;
         }
@@ -64,18 +66,18 @@ export class ImageControl extends fabric.FabricImage {
 
   constructor(element: HTMLImageElement, options: any) {
     const defaultOptions = {
-      cornerSize: SIZES.CORNER_SIZE,
-      cornerColor: COLORS.PRIMARY,
-      cornerStyle: "circle",
-      transparentCorners: false,
-      hasRotatingPoint: false,
-      padding: 0,
-      borderColor: COLORS.PRIMARY,
-      lockRotation: true,
-      // 添加缩放相关配置
-      lockScalingX: false,
-      lockScalingY: false,
-      lockUniScaling: false,  // 允许非等比缩放
+      // cornerSize: SIZES.CORNER_SIZE,
+      // cornerColor: COLORS.PRIMARY,
+      // cornerStyle: "circle",
+      // transparentCorners: false,
+      // hasRotatingPoint: false,
+      // padding: 0,
+      // borderColor: COLORS.PRIMARY,
+      // lockRotation: true,
+      // // 添加缩放相关配置
+      // lockScalingX: false,
+      // lockScalingY: false,
+      // lockUniScaling: false,  // 允许非等比缩放
       ...options,
     };
 
@@ -116,9 +118,9 @@ export class ImageControl extends fabric.FabricImage {
       configurable: false,
       writable: false
     });
-    this.on('moving', this.handleMoving.bind(this));
-    this.on('mouseup', this.handleMoveEnd.bind(this));
-    this.on('deselected', this.handleMoveEnd.bind(this));
+    // this.on('moving', this.handleMoving.bind(this));
+    // this.on('mouseup', this.handleMoveEnd.bind(this));
+    // this.on('deselected', this.handleMoveEnd.bind(this));
   }
 
 
@@ -128,15 +130,15 @@ export class ImageControl extends fabric.FabricImage {
     EventBus.emit(EventTypes.CONTROL_PANEL.HIDE_IMAGE_SETTING_TOOLBAR);
   }
 
-    // 处理移动结束事件
-    private handleMoveEnd(): void {
-      this._isMoving = false;
-      EventBus.emit(EventTypes.CONTROL_PANEL.SHOW_IMAGE_SETTING_TOOLBAR, {
-        target: this,
-        canvas: this.canvas,
-        canvasManager: getCanvasManager()
-      });
-    }
+  // 处理移动结束事件
+  private handleMoveEnd(): void {
+    this._isMoving = false;
+    EventBus.emit(EventTypes.CONTROL_PANEL.SHOW_IMAGE_SETTING_TOOLBAR, {
+      target: this,
+      canvas: this.canvas,
+      canvasManager: getCanvasManager()
+    });
+  }
 
   _render(ctx: CanvasRenderingContext2D): void {
     const hasCorners = Object.values(this._cornerRadius).some(value => value > 0);
@@ -144,22 +146,14 @@ export class ImageControl extends fabric.FabricImage {
       // 如果没有圆角，直接调用父类的渲染方法
       super._render(ctx);
     } else {
-      // 如果有圆角，需要自定义渲染
       ctx.save();
-
-      // 获取图片的宽高
       const width = this.width || 0;
       const height = this.height || 0;
 
       // 计算实际的圆角半径（不能超过宽高的一半）
       this._renderRoundedRectWithDifferentCorners(ctx, -width / 2, -height / 2, width, height);
-
-      // 裁剪上下文
       ctx.clip();
-
-      // 绘制图片
       super._render(ctx);
-
       ctx.restore();
     }
 
@@ -307,7 +301,13 @@ export class ImageControl extends fabric.FabricImage {
 
   // 设置填充颜色
   setFillColor(color: string | null, opacity?: number): this {
-    this._fillColor = color;
+    if (this._element && this._element.tagName === 'svg') {
+      this._element.setAttribute('fill', color || 'none');
+    } else {
+      // 普通图片的处理逻辑
+      this._fillColor = color;
+    }
+
     if (opacity !== undefined) {
       this._fillOpacity = Math.max(0, Math.min(1, opacity)); // 确保透明度在 0-1 之间
     }
@@ -333,42 +333,76 @@ export class ImageControl extends fabric.FabricImage {
   // 替换图片资源方法
   replaceImage(url: string): Promise<this> {
     return new Promise((resolve, reject) => {
-      // 使用Promise方式加载图片
-      fabric.util.loadImage(url, { crossOrigin: 'anonymous' })
-        .then((img: HTMLImageElement) => {
-          // 保存当前的宽高比例
-          const originalWidth = this.width;
-          const originalHeight = this.height;
-          const originalScaleX = this.scaleX;
-          const originalScaleY = this.scaleY;
-
-          // 替换图片元素
-          this.setElement(img);
-
-          // 保持原有的宽高比例
-          if (originalWidth && originalHeight) {
-            // 计算新的缩放比例以保持显示大小一致
-            this.scaleX = (originalWidth / this.width) * originalScaleX;
-            this.scaleY = (originalHeight / this.height) * originalScaleY;
-          }
-
-          // 如果有滤镜，重新应用
-          if (this.filters && this.filters.length > 0) {
-            this.applyFilters();
-          }
-
-          // 标记需要重绘
+      this.setSrc(url, { crossOrigin: 'anonymous' })
+        .then(() => {
           this.dirty = true;
           if (this.canvas) {
             this.canvas.requestRenderAll();
           }
 
+          console.log('[ImageControl] 图片替换成功');
           resolve(this);
         })
         .catch((error) => {
-          reject(new Error(`加载图片失败: ${error.message}`));
+          console.error('[ImageControl] 图片替换失败:', error);
+          reject(error);
         });
     });
+  }
+
+
+  static fromObject(object: any, options?: any) {
+    return fabric.FabricImage.fromObject(object, options)
+      .then((img: any) => {
+        const imageControl = new ImageControl(img._element, {
+          ...object,
+          filters: img.filters,
+          resizeFilter: img.resizeFilter,
+          crossOrigin: img.crossOrigin,
+          src: img.src
+        });
+        
+        // 恢复自定义属性
+        if (object._fillColor !== undefined) {
+          imageControl._fillColor = object._fillColor;
+        }
+        
+        if (object._fillOpacity !== undefined) {
+          imageControl._fillOpacity = object._fillOpacity;
+        }
+        
+        if (object._cornerRadius) {
+          imageControl._cornerRadius = {
+            topLeft: object._cornerRadius.topLeft || 0,
+            topRight: object._cornerRadius.topRight || 0,
+            bottomRight: object._cornerRadius.bottomRight || 0,
+            bottomLeft: object._cornerRadius.bottomLeft || 0
+          };
+        }
+        
+        // 复制其他必要的属性
+        imageControl.set({
+          left: object.left,
+          top: object.top,
+          width: object.width,
+          height: object.height,
+          scaleX: object.scaleX,
+          scaleY: object.scaleY,
+          angle: object.angle,
+          flipX: object.flipX,
+          flipY: object.flipY,
+          opacity: object.opacity,
+          originX: object.originX,
+          originY: object.originY,
+          cropX: object.cropX,
+          cropY: object.cropY
+        });
+        
+        // 标记需要重绘
+        // imageControl.dirty = true;
+        return imageControl;
+      });
+  
   }
 
 
@@ -386,3 +420,5 @@ export class ImageControl extends fabric.FabricImage {
   }
 
 }
+fabric.classRegistry.setClass(ImageControl, ImageControl.type);
+fabric.classRegistry.setSVGClass(ImageControl, ImageControl.type);

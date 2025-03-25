@@ -7,12 +7,12 @@ import { findObjectsByPosition, findTargetObject, isPointInObject, isPointOnRect
 import { Slides } from "../../slides/Slides";
 import type { CustomCanvas } from "../CustomCanvas";
 import { TextControl } from "../../../composables/subassembly/controls/TextControl";
+import { EventBus, EventTypes } from "../../../utils/EventBus";
 
 export class MouseEventHandler {
   private canvas: CustomCanvas;
   private canvasManager: CanvasManager;
   private eventManager: EventManager;
-  private isDragging = false;
   private lastPosX = 0;
   private lastPosY = 0;
   // 添加变量跟踪当前悬停的对象
@@ -47,7 +47,7 @@ export class MouseEventHandler {
     this.canvas.findTarget = function (e: fabric.TPointerEvent) {
       const pointer = this.getPointer(e, true);
       const point = new fabric.Point(pointer.x, pointer.y);
-      const {target ,targets } = findTargetObject(originalCanvas , point);
+      const { target, targets } = findTargetObject(originalCanvas, point);
       return target || originalFindTarget.call(this, e);
     };
   }
@@ -57,25 +57,20 @@ export class MouseEventHandler {
    */
   private setupMouseDownEvents() {
     this.canvas.on("mouse:down", (opt: any) => {
-      if (!this.eventManager.getKeyboardHandler().isInSpaceDragMode()) {
-        this.isDragging = false;
+      if (!this.canvasManager.isDragMode()) {
         this.canvas.selection = true;
 
         // 获取鼠标点击位置
         const pointer = this.canvas.getViewportPoint(opt);
         console.log("[MouseEventHandler] mouse:down：", pointer);
         const point = new fabric.Point(pointer.x, pointer.y);
-        const {target ,targets } = findTargetObject(this.canvas , point);
+        const { target, targets } = findTargetObject(this.canvas, point);
         if (target) {
           this.canvas.setActiveObject(target);
           this.canvas.requestRenderAll();
           opt.target = target;
           return;
         }
-      } else {
-        this.isDragging = true;
-        this.canvas.selection = false;
-        this.canvas.defaultCursor = "grabbing";
       }
       this.lastPosX = opt.e.clientX;
       this.lastPosY = opt.e.clientY;
@@ -89,27 +84,9 @@ export class MouseEventHandler {
     let rafId: number | null = null;
 
     this.canvas.on("mouse:move", (opt: any) => {
-      // 处理画布拖拽
-      if (this.isDragging) {
-        if (rafId) return;
-        rafId = requestAnimationFrame(() => {
-          const deltaX = opt.e.clientX - this.lastPosX;
-          const deltaY = opt.e.clientY - this.lastPosY;
 
-          const vpt = this.canvas.viewportTransform!;
-          vpt[4] += deltaX;
-          vpt[5] += deltaY;
-
-          this.canvas.setViewportTransform(vpt);
-          this.lastPosX = opt.e.clientX;
-          this.lastPosY = opt.e.clientY;
-
-          rafId = null;
-        });
-        return;
-      }
       const pointer = this.canvas.getViewportPoint(opt);
-      if (this.eventManager.getKeyboardHandler().isInSpaceDragMode()) return;
+      if (this.canvasManager.isDragMode()) return;
       // 如果正在拖动对象，则不执行悬停检测
       if (this.canvas.isDraggingObject) return;
       this.handleObjectHover(pointer);
@@ -121,10 +98,8 @@ export class MouseEventHandler {
    * 处理对象悬停效果
    */
   private handleObjectHover(pointer: { x: number; y: number }) {
-    // 设置默认光标样式
-    this.canvas.defaultCursor = "default";
     const point = new fabric.Point(pointer.x, pointer.y);
-    const {target ,targets } = findTargetObject(this.canvas , point);
+    const { target, targets } = findTargetObject(this.canvas, point);
     // 如果当前悬停对象与新对象不同
     if (this.currentHoverObject !== target) {
       // 处理鼠标移出旧对象
@@ -156,12 +131,7 @@ export class MouseEventHandler {
    */
   private setupMouseUpEvents() {
     this.canvas.on("mouse:up", () => {
-      this.isDragging = false;
-      if (!this.eventManager.getKeyboardHandler().isInSpaceDragMode()) {
-        this.canvas.selection = true;
-      } else {
-        this.canvas.defaultCursor = "grab";
-      }
+
     });
   }
 
@@ -172,7 +142,7 @@ export class MouseEventHandler {
     this.canvas.on("mouse:wheel", (opt: any) => {
       const delta = opt.e.deltaY;
       let zoom = this.canvas.getZoom();
-      zoom *= 0.999 ** delta;
+      zoom *= 0.99985 ** delta;
       zoom = Math.min(Math.max(SIZES.MIN_ZOOM, zoom), SIZES.MAX_ZOOM);
 
       const point = {
@@ -181,7 +151,8 @@ export class MouseEventHandler {
       };
 
       this.canvas.zoomToPoint(new fabric.Point(point.x, point.y), zoom);
-
+      // 发送缩放变化事件
+      EventBus.emit(EventTypes.CANVAS.ZOOM_CHANGE);
       opt.e.preventDefault();
       opt.e.stopPropagation();
     });

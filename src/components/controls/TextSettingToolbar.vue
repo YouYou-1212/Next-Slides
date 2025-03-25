@@ -39,7 +39,14 @@
         <button @click="decreaseFontSize" title="减小字号">
           <i class="fas fa-minus"></i>
         </button>
-        <span>{{ fontSize }}</span>
+        <input 
+          type="number" 
+          v-model="fontSize" 
+          @change="updateFontSize" 
+          min="1" 
+          max="1000"
+          class="font-size-input"
+        />
         <button @click="increaseFontSize" title="增大字号">
           <i class="fas fa-plus"></i>
         </button>
@@ -124,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted , nextTick} from 'vue';
 import * as fabric from 'fabric';
 import { getSystemFonts, defaultFonts } from '../../utils/FontsUtils';
 import ColorPicker from './ColorPicker.vue';
@@ -294,6 +301,19 @@ const decreaseFontSize = () => {
   const newSize = Math.min((textObj.fontSize || 16) - 1, 1000);
   textObj.setFontSize(newSize, true);
   fontSize.value = newSize;
+};
+
+
+// 用户输入字体大小后更新
+const updateFontSize = () => {
+  if (!targetObject.value) return;
+
+  const textObj = targetObject.value as any;
+  // 确保字体大小在有效范围内
+  const newSize = Math.max(0.5, Math.min(parseInt(fontSize.value.toString()), 1000));
+  fontSize.value = newSize; // 更新显示值
+  textObj.setFontSize(newSize, true);
+  props.canvasManager?.canvas.renderAll();
 };
 
 // 设置文本颜色时同步更新自定义颜色文本
@@ -477,24 +497,27 @@ const calculatePosition = () => {
   const objWidth = objBounds.width * zoom;
   const objHeight = objBounds.height * zoom;
 
-  // 获取工具栏元素和屏幕尺寸
-  const toolbarEl = document.querySelector('.text-format-toolbar') as HTMLElement;
-  const toolbarWidth = toolbarEl ? toolbarEl.offsetWidth : 300;
-  const toolbarHeight = toolbarEl ? toolbarEl.offsetHeight : 50;
+  nextTick(() => {
+    // 获取工具栏元素和屏幕尺寸
+    const toolbarEl = document.querySelector('.text-format-toolbar') as HTMLElement;
+    const toolbarWidth = toolbarEl ? toolbarEl.offsetWidth : 300;
+    const toolbarHeight = toolbarEl ? toolbarEl.offsetHeight : 50;
 
-  const screenWidth = window.innerWidth;
-  const screenHeight = window.innerHeight;
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
 
-  // 将工具栏放在对象上方并水平居中
-  let left = objLeft - (toolbarWidth / 2);
-  let top = objTop - toolbarHeight - 15;
+    // 将工具栏放在对象上方并水平居中
+    let left = objLeft + (objWidth / 2) - (toolbarWidth / 2);
+    let top = objTop - toolbarHeight - 15;
 
-  // 确保工具栏在屏幕范围内
-  left = Math.max(10, Math.min(left, screenWidth - toolbarWidth - 10));
-  top = Math.max(10, Math.min(top, screenHeight - toolbarHeight - 10));
+    // 确保工具栏在屏幕范围内
+    left = Math.max(10, Math.min(left, screenWidth - toolbarWidth - 10));
+    top = Math.max(10, Math.min(top, screenHeight - toolbarHeight - 10));
 
-  // 设置位置
-  position.value = { left, top };
+    // 设置位置
+    position.value = { left, top };
+  });
+
 };
 
 
@@ -594,17 +617,35 @@ button.active {
   border: 1px solid #d9d9d9;
   border-radius: 2px;
   height: 32px;
-  /* 增加控件高度 */
 }
 
 .font-size-control button {
   border: none;
   width: 28px;
   height: 30px;
-  /* 调整高度以适应父容器 */
 }
 
-.font-size-control span {
+
+.font-size-input {
+  width: 40px;
+  text-align: center;
+  font-size: 14px;
+  color: #595959;
+  border: none;
+  border-left: 1px solid #d9d9d9;
+  border-right: 1px solid #d9d9d9;
+  height: 100%;
+  padding: 0;
+  -moz-appearance: textfield; /* 移除Firefox中的上下箭头 */
+}
+
+.font-size-input::-webkit-outer-spin-button,
+.font-size-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* .font-size-control span {
   min-width: 40px;
   text-align: center;
   font-size: 14px;
@@ -613,7 +654,7 @@ button.active {
   border-right: 1px solid #d9d9d9;
   height: 100%;
   line-height: 30px;
-}
+} */
 
 .font-family-control select {
   height: 24px;

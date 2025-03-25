@@ -183,13 +183,16 @@ export class CanvasSyncManager {
 
       // 获取主画布中的所有对象
       const objects = this.sourceCanvas.getObjects();
-      
+
       // 直接克隆方式同步对象
-      const clonePromises = objects.map(obj => 
+      const clonePromises = objects.map(obj =>
         new Promise<fabric.Object>(async (resolve) => {
           try {
             // 直接克隆对象
             const clonedObj = await obj.clone();
+            // 清除所有事件监听器
+            // 移除所有事件监听器
+            clonedObj.off();
             resolve(clonedObj);
           } catch (error) {
             console.error(`克隆对象失败: ${obj.type}`, error);
@@ -199,22 +202,27 @@ export class CanvasSyncManager {
           }
         })
       );
-      
+
       // 等待所有克隆完成
       const clonedObjects = await Promise.all(clonePromises);
-      
+
       // 处理克隆后的对象并添加到目标画布
       clonedObjects.forEach((obj: any) => {
         if (!obj) return; // 跳过克隆失败的对象
-        
+
         // 移除控制点和边框
         if (obj.hasOwnProperty("controls")) {
           obj.controls = {};
         }
-        
+
         // 保存原始类型信息
         const originalType = obj.type;
-        
+
+        // 禁用所有交互行为
+        obj.selectable = false;
+        obj.evented = false; // 禁止事件响应
+        obj.hoverCursor = "default";
+
         // 如果是Frame或PageFrame类型，取消自定义边框
         if (
           originalType === Frame.type ||
@@ -237,14 +245,14 @@ export class CanvasSyncManager {
           obj.selectable = false;
           obj.hoverCursor = "default";
         }
-        
+
         // 添加到演示画布
         this.targetCanvas.add(obj);
       });
 
       // 渲染演示画布
       this.targetCanvas.requestRenderAll();
-      
+
       // 完成同步
       this.syncInProgress = false;
 

@@ -7,6 +7,7 @@ import { EventBus, EventTypes } from "../../../utils/EventBus";
 import { TextControl } from "../../../composables/subassembly/controls/TextControl";
 import { Slides } from "../../../composables/slides/Slides";
 import { ImageControl } from "../../../composables/subassembly/controls/ImageControl";
+import { PictureControl } from "../../../composables/subassembly/controls/PictureControl";
 
 export class SelectionEventHandler {
   private canvas: fabric.Canvas;
@@ -30,28 +31,18 @@ export class SelectionEventHandler {
   private handleSelection(event: any) {
     const target = event.selected?.[0];
     if (!target) return;
-
-    // console.log("handleSelection Slides 开始选中：", target);
-    // if (target instanceof Slides) {
-    //   console.log("handleSelection Slides", target);
-    //   target.setCu1stomBorderColor(COLORS.BORDER.SLIDES_HOVER);
-    // }
-
-
     this.handleSelectionEventBorderStatus(event);
     // 处理文本组件选中，显示文本设置工具栏
     if (target.type === TextControl.type || target.type === "textbox") {
       this.showTextSettingToolbar(target);
     } else {
-      // 非文本组件选中时，隐藏文本设置工具栏
       this.hideTextSettingToolbar();
     }
 
 
-    if (target.type === ImageControl.type) {
+    if (target.type === PictureControl.type) {
       this.showImageSettingToolbar(target);
     } else {
-      // 非文本组件选中时，隐藏文本设置工具栏
       this.hideImageSettingToolbar();
     }
 
@@ -79,12 +70,7 @@ export class SelectionEventHandler {
   }
 
   private handleSelectionEventBorderStatus(event: any) {
-    // console.log("handleSelectionEventBorderStatus", event);
     const deselectedObjects = event.deselected;
-    // console.log(
-    //   "handleSelectionEventBorderStatus deselectedObjects",
-    //   deselectedObjects
-    // );
     if (deselectedObjects?.length > 0) {
       deselectedObjects.forEach((target: any) => {
         if (target.type === TextControl.type && typeof target.showBorder === "function") {
@@ -98,16 +84,8 @@ export class SelectionEventHandler {
 
     //首次选中
     const selectedObjects = event.selected;
-    // console.log(
-    //   "handleSelectionEventBorderStatus selectedObjects",
-    //   selectedObjects
-    // );
     if (selectedObjects?.length > 0) {
       selectedObjects.forEach((target: any) => {
-        // console.log(
-        //   "handleSelectionEventBorderStatus selectedObjects 循环遍历：",
-        //   target
-        // );
         if (target.type === PageFrame.type || target.type === Frame.type) {
           // console.log("handleSelectionEventBorderStatus Slides 选中前保存原始边框颜色：", target , target._originalCustomBorderColor);
           if (target._originalCustomBorderColor === undefined) {
@@ -210,7 +188,6 @@ export class SelectionEventHandler {
   // 显示文本设置工具栏
   private showTextSettingToolbar(target: fabric.Object) {
     if (!target || (target.type !== TextControl.type)) return;
-
     EventBus.emit(EventTypes.CONTROL_PANEL.SHOW_TEXT_SETTING_TOOLBAR, {
       target,
       canvas: this.canvas,
@@ -227,7 +204,6 @@ export class SelectionEventHandler {
   // 显示图片设置工具栏
   private showImageSettingToolbar(target: fabric.Object) {
     if (!target) return;
-
     EventBus.emit(EventTypes.CONTROL_PANEL.SHOW_IMAGE_SETTING_TOOLBAR, {
       target,
       canvas: this.canvas,

@@ -2,7 +2,7 @@
     <div class="image-format-toolbar" :style="toolbarStyle" v-if="visible">
         <div class="toolbar-buttons">
             <!-- 图片滤镜选择 -->
-            <div class="filter-control">
+            <div class="filter-control" v-if="!isSvgImage">
                 <select v-model="imageFilter" @change="changeImageFilter">
                     <option v-for="filter in imageFilters" :key="filter.value" :value="filter.value">
                         {{ filter.label }}
@@ -10,7 +10,8 @@
                 </select>
             </div>
 
-            <div class="divider"></div>
+            <div class="divider" v-if="!isSvgImage"></div>
+
 
             <div class="fill-color-container">
                 <button @click="showColorPickerDirectly" :class="{ active: hasFillColor }" title="填充颜色">
@@ -25,21 +26,21 @@
 
             <div class="divider"></div>
 
-            <!-- 图片圆角控制 -->
-            <button @click="toggleRoundCorners" :class="{ active: hasRoundCorners }" title="圆角">
+           <!-- 图片圆角控制 -->
+           <button v-if="!isSvgImage" @click="toggleRoundCorners" :class="{ active: hasRoundCorners }" title="圆角">
                 <n-icon size="17">
                     <RoundedCornerOutlined />
                 </n-icon>
             </button>
             <!-- 圆角操作区 -->
-            <div v-if="showCornerRadiusPanel" class="corner-radius-panel">
+            <div v-if="showCornerRadiusPanel  && !isSvgImage" class="corner-radius-panel" @click.stop>
                 <div class="corner-radius-grid">
                     <div class="corner-radius-item">
                         <label>左上角</label>
                         <div class="input-with-unit">
                             <n-input-number v-model:value="cornerRadius.topLeft" :min="0" :step="1" size="small"
-                                @update:value="updateCornerRadius" class="corner-input-number" :default-value="0"
-                                :key="`topLeft-${cornerRadius.topLeft}`" />
+                                @update:value="updateCornerRadiusDebounced('topLeft', $event)"
+                                class="corner-input-number" :default-value="0" />
                             <span class="unit">px</span>
                         </div>
                     </div>
@@ -47,8 +48,8 @@
                         <label>右上角</label>
                         <div class="input-with-unit">
                             <n-input-number v-model:value="cornerRadius.topRight" :min="0" :step="1" size="small"
-                                @update:value="updateCornerRadius" class="corner-input-number" :default-value="0"
-                                :key="`topRight-${cornerRadius.topRight}`" />
+                                @update:value="updateCornerRadiusDebounced('topRight', $event)"
+                                class="corner-input-number" :default-value="0" />
                             <span class="unit">px</span>
                         </div>
                     </div>
@@ -56,8 +57,8 @@
                         <label>左下角</label>
                         <div class="input-with-unit">
                             <n-input-number v-model:value="cornerRadius.bottomLeft" :min="0" :step="1" size="small"
-                                @update:value="updateCornerRadius" class="corner-input-number" :default-value="0"
-                                :key="`bottomLeft-${cornerRadius.bottomLeft}`" />
+                                @update:value="updateCornerRadiusDebounced('bottomLeft', $event)"
+                                class="corner-input-number" :default-value="0" />
                             <span class="unit">px</span>
                         </div>
                     </div>
@@ -65,29 +66,29 @@
                         <label>右下角</label>
                         <div class="input-with-unit">
                             <n-input-number v-model:value="cornerRadius.bottomRight" :min="0" :step="1" size="small"
-                                @update:value="updateCornerRadius" class="corner-input-number" :default-value="0"
-                                :key="`bottomRight-${cornerRadius.bottomRight}`" />
+                                @update:value="updateCornerRadiusDebounced('bottomRight', $event)"
+                                class="corner-input-number" :default-value="0" />
                             <span class="unit">px</span>
                         </div>
                     </div>
                 </div>
                 <div class="corner-radius-actions">
-                    <n-button size="small" type="primary" @click="applyUniformRadius"
+                    <n-button size="small" type="primary" @click.stop="applyUniformRadius"
                         class="corner-button">统一圆角</n-button>
-                    <n-button size="small" @click="resetCornerRadius" class="corner-button">重置</n-button>
+                    <n-button size="small" @click.stop="resetCornerRadius" class="corner-button">重置</n-button>
                 </div>
             </div>
 
-            <div class="divider"></div>
+            <div class="divider" v-if="!isSvgImage"></div>
 
             <!-- 图片透明度控制 -->
-            <div class="opacity-control">
+            <div class="opacity-control"  v-if="!isSvgImage">
                 <span>透明度:</span>
                 <input type="range" min="0" max="1" step="0.1" v-model="opacity" @input="changeOpacity" />
                 <span>{{ Math.round(opacity * 100) }}%</span>
             </div>
 
-            <div class="divider"></div>
+            <div class="divider" v-if="!isSvgImage"></div>
 
             <!-- 图片翻转控制 -->
             <button @click="flipHorizontal" title="水平翻转">
@@ -108,20 +109,34 @@
 </template>
 
 <script setup lang="ts">
-import { defineComponent, ref, computed, watch, onMounted } from 'vue';
+import { defineComponent, ref, computed, watch, onMounted, nextTick } from 'vue';
 import * as fabric from 'fabric';
 import { EventBus, EventTypes } from '../../utils/EventBus';
 import ColorPicker from './ColorPicker.vue';
 
 import { RoundedCornerOutlined } from '@vicons/material'
+import { PictureControl } from '@/composables/subassembly/controls/PictureControl';
+import type { ImageControl } from '@/composables/subassembly/controls/ImageControl';
 
 const props = defineProps<{
     canvasManager?: any;
     panelData?: any;
 }>();
 
+// 添加防抖函数
+function debounce(fn: Function, delay: number) {
+    let timer: number | null = null;
+    return function (...args: any[]) {
+        if (timer) clearTimeout(timer);
+        timer = window.setTimeout(() => {
+            fn(...args);
+            timer = null;
+        }, delay);
+    };
+}
+
 const visible = ref(false);
-const targetObject = ref<fabric.Object | null>(null);
+const targetObject = ref<PictureControl | null>(null);
 const position = ref({ top: 0, left: 0 });
 
 // 图片样式状态
@@ -144,6 +159,8 @@ const cornerRadius = ref<{
     bottomRight: 0
 });
 const opacity = ref(1);
+
+const isSvgImage = ref(false);
 
 // 图片滤镜选项
 const imageFilters = [
@@ -172,6 +189,7 @@ const handleFillColorSelect = (color: string, opacity: number) => {
 
 // 显示颜色选择器
 const showColorPickerDirectly = () => {
+    showCornerRadiusPanel.value = false;
     showFillColorPicker.value = !showFillColorPicker.value;
 };
 
@@ -180,45 +198,38 @@ const showColorPickerDirectly = () => {
 const setFillColor = (color: string, opacity: number = 0.3) => {
     if (!targetObject.value) return;
 
-    const imgObj = targetObject.value as any;
+    const imgObj = targetObject.value;
     imgObj.setFillColor(color, opacity);
     fillColor.value = color;
-
-    props.canvasManager?.canvas.requestRenderAll();
+    hasFillColor.value = !!imgObj.getFillColor()?.color;
 };
 
 
 // 更新图片样式状态
 const updateImageStyleState = () => {
     if (!targetObject.value) return;
-
-    const imgObj = targetObject.value as any;
-
-    // 获取当前滤镜
-    imageFilter.value = getAppliedFilter(imgObj) || 'none';
-
-    // 获取边框状态
-    // hasBorder.value = !!imgObj.strokeWidth && imgObj.strokeWidth > 0;
-    // borderColor.value = imgObj.stroke || '#000000';
-
-    // 获取填充颜色状态
-    // hasFillColor.value = !!imgObj.fill;
-    // fillColor.value = imgObj.fill || '#FFFFFF';
-    if (imgObj.getFillColor) {
-        const fillColorInfo = imgObj.getFillColor();
-        hasFillColor.value = !!fillColorInfo.color;
-        fillColor.value = fillColorInfo.color || '#FFFFFF';
-        fillOpacity.value = fillColorInfo.opacity;
+    if (targetObject.value.isSvg()) {
+        const imgObj = targetObject.value;
+        hasFillColor.value = !!imgObj.getFillColor()?.color;
+        fillColor.value = imgObj.getFillColor()?.color || '#FFFFFF';
     } else {
-        hasFillColor.value = !!imgObj.fill;
-        fillColor.value = imgObj.fill || '#FFFFFF';
+        const imgObj = targetObject.value as any;
+        imageFilter.value = getAppliedFilter(imgObj) || 'none';
+
+        if (imgObj.getFillColor) {
+            const fillColorInfo = imgObj.getFillColor();
+            hasFillColor.value = !!fillColorInfo.color;
+            fillColor.value = fillColorInfo.color || '#FFFFFF';
+            fillOpacity.value = fillColorInfo.opacity;
+        } else {
+            hasFillColor.value = !!imgObj.fill;
+            fillColor.value = imgObj.fill || '#FFFFFF';
+        }
+        // 获取圆角状态
+        syncHasRoundCorners(imgObj.getInnerControl());
+        // 获取透明度
+        opacity.value = imgObj.opacity !== undefined ? imgObj.opacity : 1;
     }
-
-    // 获取圆角状态
-    syncHasRoundCorners(imgObj);
-
-    // 获取透明度
-    opacity.value = imgObj.opacity !== undefined ? imgObj.opacity : 1;
 };
 
 const syncHasRoundCorners = (imgObj: any) => {
@@ -227,56 +238,15 @@ const syncHasRoundCorners = (imgObj: any) => {
 }
 
 // 获取应用的滤镜
-const getAppliedFilter = (obj: any) => {
-    if (!obj.filters || obj.filters.length === 0) return 'none';
-
-    // 根据滤镜类型返回对应的值
-    const filter = obj.filters[0];
-    if (!filter) return 'none';
-
-    if (filter instanceof fabric.filters.Grayscale) return 'grayscale';
-    if (filter instanceof fabric.filters.Sepia) return 'sepia';
-    if (filter instanceof fabric.filters.Invert) return 'invert';
-    if (filter instanceof fabric.filters.Blur) return 'blur';
-    if (filter instanceof fabric.filters.Convolute && filter.matrix) return 'sharpen';
-    return 'none';
+const getAppliedFilter = (obj: PictureControl) => {
+    if (!obj) return 'none';
+    return obj.getAppliedFilterType();
 };
 
 // 更改图片滤镜
 const changeImageFilter = () => {
     if (!targetObject.value) return;
-
-    const imgObj = targetObject.value as fabric.Image;
-    const filters: any[] = [];
-
-    // 根据选择的滤镜类型添加对应的滤镜
-    switch (imageFilter.value) {
-        case 'grayscale':
-            filters.push(new fabric.filters.Grayscale());
-            break;
-        case 'sepia':
-            filters.push(new fabric.filters.Sepia());
-            break;
-        case 'invert':
-            filters.push(new fabric.filters.Invert());
-            break;
-        case 'blur':
-            filters.push(new fabric.filters.Blur({ blur: 0.25 }));
-            break;
-        case 'sharpen':
-            filters.push(new fabric.filters.Convolute({
-                matrix: [0, -1, 0, -1, 5, -1, 0, -1, 0]
-            }));
-            break;
-        default:
-            // 无滤镜
-            break;
-    }
-
-    // 应用滤镜
-    imgObj.filters = filters;
-    imgObj.applyFilters();
-    props.canvasManager?.canvas.renderAll();
+    targetObject.value.applyFilter(imageFilter.value);
 };
 
 // 切换圆角面板显示
@@ -296,10 +266,21 @@ const toggleCornerRadiusPanel = () => {
     }
 };
 
+const updateCornerRadiusDebounced = debounce((corner: string, value: number) => {
+    if (!targetObject.value) return;
+
+    // 更新对应的圆角值
+    cornerRadius.value[corner as keyof typeof cornerRadius.value] = value;
+
+    // 应用圆角设置
+    updateCornerRadius();
+}, 100);
+
+
 // 更新圆角半径
 const updateCornerRadius = () => {
     if (!targetObject.value) return;
-    const imgObj = targetObject.value as any;
+    const imgObj = targetObject.value;
     imgObj.setCornerRadii({
         topLeft: cornerRadius.value.topLeft,
         topRight: cornerRadius.value.topRight,
@@ -346,25 +327,10 @@ const resetCornerRadius = () => {
 };
 
 
-// 增加圆角值
-const incrementRadius = (corner: keyof typeof cornerRadius.value) => {
-    if (cornerRadius.value[corner] < 100) {
-        cornerRadius.value[corner] += 1;
-        updateCornerRadius();
-    }
-};
-
-// 减少圆角值
-const decrementRadius = (corner: keyof typeof cornerRadius.value) => {
-    if (cornerRadius.value[corner] > 0) {
-        cornerRadius.value[corner] -= 1;
-        updateCornerRadius();
-    }
-};
-
-
 // 切换圆角
-const toggleRoundCorners = () => {
+const toggleRoundCorners = (event: MouseEvent) => {
+    event.stopPropagation(); // 阻止事件冒泡
+    showFillColorPicker.value = false;
     toggleCornerRadiusPanel();
 };
 
@@ -398,13 +364,6 @@ const flipVertical = () => {
     props.canvasManager?.canvas.renderAll();
 };
 
-// 开始裁剪
-const startCrop = () => {
-    // 实现裁剪功能
-    console.log('开始裁剪图片');
-    // 这里需要实现裁剪逻辑
-};
-
 // 替换图片
 const replaceImage = () => {
     EventBus.emit(EventTypes.CONTROL_PANEL.OPEN, {
@@ -435,24 +394,27 @@ const calculatePosition = () => {
     const objWidth = objBounds.width * zoom;
     const objHeight = objBounds.height * zoom;
 
-    // 获取工具栏元素和屏幕尺寸
-    const toolbarEl = document.querySelector('.image-format-toolbar') as HTMLElement;
-    const toolbarWidth = toolbarEl ? toolbarEl.offsetWidth : 300;
-    const toolbarHeight = toolbarEl ? toolbarEl.offsetHeight : 50;
+    nextTick(() => {
+        // 获取工具栏元素和屏幕尺寸
+        const toolbarEl = document.querySelector('.image-format-toolbar') as HTMLElement;
+        const toolbarWidth = toolbarEl ? toolbarEl.offsetWidth : 300;
+        const toolbarHeight = toolbarEl ? toolbarEl.offsetHeight : 50;
 
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
 
-    // 将工具栏放在对象上方并水平居中
-    let left = objLeft - (toolbarWidth / 2);
-    let top = objTop - toolbarHeight - 15;
+        // 将工具栏放在对象上方并水平居中
+        let left = objLeft + (objWidth / 2) - (toolbarWidth / 2);
+        let top = objTop - toolbarHeight - 15;
 
-    // 确保工具栏在屏幕范围内
-    left = Math.max(10, Math.min(left, screenWidth - toolbarWidth - 10));
-    top = Math.max(10, Math.min(top, screenHeight - toolbarHeight - 10));
+        // 确保工具栏在屏幕范围内
+        left = Math.max(10, Math.min(left, screenWidth - toolbarWidth - 10));
+        top = Math.max(10, Math.min(top, screenHeight - toolbarHeight - 10));
 
-    // 设置位置
-    position.value = { left, top };
+        // 设置位置
+        position.value = { left, top };
+    });
+
 };
 
 // 监听 panelData 变化
@@ -460,19 +422,23 @@ watch(() => props.panelData, (newData) => {
     if (newData && newData.target) {
         targetObject.value = newData.target;
         visible.value = true;
+        isSvgImage.value = targetObject.value?.isSvg() || false;
         updateImageStyleState();
         calculatePosition();
     }
-}, { immediate: true });
+}, { immediate: true, deep: true });
 
 // 点击其他地方关闭颜色选择器
 onMounted(() => {
-    // document.addEventListener('click', (e) => {
-    //     if (showBorderColorPicker.value &&
-    //         !e.composedPath().some(el => (el as HTMLElement).classList?.contains('color-selector'))) {
-    //         showBorderColorPicker.value = false;
-    //     }
-    // });
+    document.addEventListener('click', (event) => {
+        if (!showFillColorPicker.value && !showCornerRadiusPanel.value) return;
+
+        const target = event.target as HTMLElement;
+        if (!target.closest('.image-format-toolbar')) {
+            showFillColorPicker.value = false;
+            showCornerRadiusPanel.value = false;
+        }
+    });
 });
 </script>
 

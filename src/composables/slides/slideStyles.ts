@@ -6,7 +6,7 @@ export const glassEffect = {
   // fill: ColorUtils.generateSoftRandomColor(),
   // stroke: "rgba(0, 0, 0, 0.4)",
   // strokeWidth: 1,
-  customBorderColor: "rgba(0, 0, 0, 0.4)",
+  customBorderColor: "#999999",
   rx: 3,
   ry: 3,
   shadow: new fabric.Shadow({

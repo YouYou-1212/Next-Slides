@@ -14,6 +14,7 @@ export const EventTypes = {
     HIDE_TEXT_SETTING_TOOLBAR: 'control-panel:hide-text-setting-toolbar',
     SHOW_IMAGE_SETTING_TOOLBAR: 'control-panel:show-image-toolbar',
     HIDE_IMAGE_SETTING_TOOLBAR: 'control-panel:hide-image-setting-toolbar',
+    UPDATE_IMAGE_SETTING_TOOLBAR: 'control-panel:update-image-setting-toolbar',
   },
   PANEL_TYPE: {
     BACKGROUND_IMAGE: 'background-image',
@@ -28,7 +29,8 @@ export const EventTypes = {
   CANVAS: {
     CANVAS_UPDATE:'canvas:update',
     BACKGROUND_COLOR_CHANGE: 'canvas:background-color-change',
-    BACKGROUND_IMAGE_CHANGE: 'canvas:background-image-change'
+    BACKGROUND_IMAGE_CHANGE: 'canvas:background-image-change',
+    ZOOM_CHANGE: 'canvas:zoom-change'
   },
   // 添加Frame相关事件
   FRAME: {

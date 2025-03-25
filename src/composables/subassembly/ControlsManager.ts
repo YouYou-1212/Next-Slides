@@ -6,8 +6,9 @@ import { TextControl } from "./controls/TextControl";
 import { ImageControl } from "./controls/ImageControl";
 import { ShapeControl } from "./controls/ShapeControl";
 import { SIZES } from "../../constants/theme";
-import type { CustomCanvas } from "../canvas/CustomCanvas";
+import { CustomCanvas } from "../canvas/CustomCanvas";
 import { markRaw } from "vue";
+import { PictureControl } from "./controls/PictureControl";
 
 export class ControlsManager {
   private canvas: CustomCanvas;
@@ -81,13 +82,9 @@ export class ControlsManager {
       console.warn("No active frame and no page frame found");
       return null;
     }
-    console.log("addControl targetFrame:", targetFrame);
-
     try {
       // 创建控件
       const control = await createControlFn(options);
-      console.log("addControl control:", control);
-
       // 保存相对位置
       control.set("_originalLeft", control.left - targetFrame.left);
       control.set("_originalTop", control.top - targetFrame.top);
@@ -99,7 +96,6 @@ export class ControlsManager {
       }
       this.canvas.add(markRaw(control));
       this.canvas.setActiveObject(control);
-      // this.canvas.renderAll();
       return control;
     } catch (error) {
       console.error("Failed to add control:", error);
@@ -128,23 +124,25 @@ export class ControlsManager {
   }
 
   // 添加图片
-  addImage(url: string, options: any = {}) {
+  addImage(url: string, type?:string , options: any = {}) {
     const center = this.getVisibleCenter();
     const zoom = this.canvas.getZoom();
 
-    const createImageControl = async (opts: any): Promise<ImageControl> => {
-      const image = await ImageControl.create(url, {
+    const createImageControl = async (opts: any): Promise<PictureControl> => {
+      const image = await PictureControl.create(url, {
         left: opts.left !== undefined ? opts.left : center.x,
         top: opts.top !== undefined ? opts.top : center.y,
-        scaleX: 0.5 / zoom,
-        scaleY: 0.5 / zoom,
+        scaleX: PictureControl.isSvgUrl(url , type) ? 1 :0.5 / zoom,
+        scaleY: PictureControl.isSvgUrl(url , type) ? 1 :0.5 / zoom,
+        type: type,
         ...opts,
       });
-      return image as ImageControl;
+      return image as PictureControl;
     };
 
-    return this.addControl<ImageControl>(createImageControl, options);
+    return this.addControl<PictureControl>(createImageControl, options);
   }
+
 
   // 添加形状
   addShape(type: string, options: any = {}) {

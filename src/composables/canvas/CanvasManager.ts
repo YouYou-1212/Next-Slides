@@ -49,6 +49,7 @@ export class CanvasManager {
   private contextMenuManager: ContextMenuManager;
   // 空格拖动状态
   private isSpaceDragging = false;
+  private currentDragMode: 'default' | 'pan' | 'select' = 'default';
 
   constructor(
     canvasElement: HTMLCanvasElement,
@@ -161,7 +162,7 @@ export class CanvasManager {
     setCanvasManager(this);
 
     // 导入默认模板
-    // this.importCanvasFromJSON(defaultTemplate);
+    this.importCanvasFromJSON(defaultTemplate);
   }
 
 
@@ -277,6 +278,8 @@ export class CanvasManager {
   }
 
   public destroy() {
+    // 清理平移模式的事件处理器
+    this.disablePanMode();
     this.canvas.dispose();
     this.presentationCanvas.dispose();
 
@@ -294,15 +297,14 @@ export class CanvasManager {
   public navigateToFrame(frame: Slides) {
     // 获取画布
     const canvas = this.getMainCanvas();
-
     const viewportInfo: any = calculateViewportInfo(canvas, frame)
     // 设置视口变换，使帧居中
     canvas.setViewportTransform(viewportInfo.transform);
-    // canvas.requestRenderAll();
   };
 
   public setZoom(zoom: number) {
-    this.canvas.setZoom(zoom);
+    const centerPoint:fabric.Point = this.canvas.getVpCenter();
+    this.canvas.zoomToPoint(centerPoint , zoom);
   }
 
   public getZoom() {
@@ -353,6 +355,174 @@ export class CanvasManager {
     this.canvas.remove(object);
   }
 
+  /**
+    * 设置画布的拖动模式
+    * @param mode 拖动模式: 'default' - 默认模式, 'pan' - 平移模式, 'select' - 选择模式
+    * @param isSpaceDragging 是否是空格拖动
+    */
+  public setDragMode(mode: 'default' | 'pan' | 'select'  , isSpaceDragging = false) {
+    // 如果模式没有变化，则不执行任何操作
+    if (this.currentDragMode === mode) return;
+    this.isSpaceDragging = isSpaceDragging;
+
+    // 保存新的模式
+    this.currentDragMode = mode;
+
+    // 获取画布实例
+    const canvas = this.getMainCanvas();
+
+    // 根据模式设置画布属性
+    switch (mode) {
+      case 'pan':
+        canvas.selection = false;
+        canvas.skipTargetFind = true;
+        canvas.defaultCursor = 'grab';
+        canvas.hoverCursor = 'grab';
+        canvas.moveCursor = 'grabbing';
+        this.enablePanMode();
+        break;
+
+      case 'select':
+        canvas.selection = true;
+        canvas.skipTargetFind = false;
+        canvas.defaultCursor = 'default';
+        canvas.hoverCursor = 'move';
+        canvas.moveCursor = 'move';
+        this.disablePanMode();
+        break;
+
+      case 'default':
+      default:
+        // 默认模式：启用对象选择
+        canvas.selection = true;
+        canvas.skipTargetFind = false;
+        canvas.defaultCursor = 'default';
+        canvas.hoverCursor = 'move';
+        canvas.moveCursor = 'move';
+
+        // 禁用平移模式
+        this.disablePanMode();
+        break;
+    }
+
+    // 重新渲染画布
+    canvas.requestRenderAll();
+  }
+
+
+  /**
+    * 启用平移模式
+    * 添加鼠标事件处理器以实现画布拖动
+    */
+  private enablePanMode() {
+    const canvas = this.getMainCanvas();
+
+    // 移除可能存在的旧事件处理器
+    this.disablePanMode();
+
+    // 添加鼠标按下事件
+    canvas.on('mouse:down', this.handlePanMouseDown);
+    // 添加鼠标移动事件
+    canvas.on('mouse:move', this.handlePanMouseMove);
+    // 添加鼠标松开事件
+    canvas.on('mouse:up', this.handlePanMouseUp);
+  }
+
+  /**
+   * 禁用平移模式
+   * 移除鼠标事件处理器
+   */
+  private disablePanMode() {
+    const canvas = this.getMainCanvas();
+
+    // 移除鼠标事件处理器
+    canvas.off('mouse:down', this.handlePanMouseDown);
+    canvas.off('mouse:move', this.handlePanMouseMove);
+    canvas.off('mouse:up', this.handlePanMouseUp);
+
+    // 重置拖动状态
+    this.isDragging = false;
+  }
+
+  /**
+   * 处理平移模式下的鼠标按下事件
+   */
+  private handlePanMouseDown = (opt: fabric.TPointerEventInfo<fabric.TPointerEvent>) => {
+    if (!opt) return;
+
+    // 设置拖动状态
+    this.isDragging = true;
+
+    // 记录鼠标位置
+    this.lastPosX = opt.viewportPoint.x;
+    this.lastPosY = opt.viewportPoint.y;
+
+    // 更改光标样式
+    this.canvas.defaultCursor = 'grabbing';
+  };
+
+  /**
+   * 处理平移模式下的鼠标移动事件
+   */
+  private handlePanMouseMove = (opt: fabric.TPointerEventInfo<fabric.TPointerEvent>) => {
+    if (!this.isDragging) return;
+
+    if (!opt) return;
+
+   // 计算鼠标移动距离
+   const deltaX = opt.viewportPoint.x - this.lastPosX;
+   const deltaY = opt.viewportPoint.y - this.lastPosY;
+
+    // 更新鼠标位置
+    this.lastPosX = opt.viewportPoint.x;
+    this.lastPosY = opt.viewportPoint.y;
+
+    // 获取当前视口变换
+    const vpt = this.canvas.viewportTransform;
+    if (!vpt) return;
+
+    // 更新视口变换以实现画布平移
+    vpt[4] += deltaX;
+    vpt[5] += deltaY;
+
+    // 应用新的视口变换
+    this.canvas.setViewportTransform(vpt);
+
+    // 阻止事件冒泡和默认行为
+    const evt = opt.e;
+    if (evt) {
+      evt.preventDefault();
+      evt.stopPropagation();
+    }
+  };
+
+  /**
+   * 处理平移模式下的鼠标松开事件
+   */
+  private handlePanMouseUp = () => {
+    // 重置拖动状态
+    this.isDragging = false;
+
+    // 恢复光标样式
+    this.canvas.defaultCursor = 'grab';
+  };
+
+  /**
+   * 获取当前拖动模式
+   * @returns 当前的拖动模式
+   */
+  public getDragMode() {
+    return this.currentDragMode;
+  }
+
+
+  /**
+   * 是否处于拖动模式
+   * @returns 
+   */
+  public isDragMode() {
+    return this.currentDragMode === 'pan' ? true : false; 
+  }
 
 
 
@@ -361,7 +531,9 @@ export class CanvasManager {
      */
   public exportCanvasToJSON() {
     try {
-      const currentTransform:any = [...this.canvas.viewportTransform!];
+      // 导出前取消所有选中状态
+      this.canvas.discardActiveObject();
+      const currentTransform: any = [...this.canvas.viewportTransform!];
       // 临时重置视口变换为默认值
       this.canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
 
