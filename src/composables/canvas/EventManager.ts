@@ -13,14 +13,14 @@ export class EventManager {
   private selectionEventHandler: SelectionEventHandler;
 
   constructor(canvas: CustomCanvas, canvasManager: CanvasManager) {
-    // 初始化各个事件处理器
+    
     this.keyboardHandler = new KeyboardEventHandler(canvas , canvasManager);
     this.mouseHandler = new MouseEventHandler(canvas, canvasManager, this);
     this.objectEventHandler = new ObjectEventHandler(canvas, canvasManager);
     this.selectionEventHandler = new SelectionEventHandler(canvas, canvasManager);
   }
 
-  // 提供获取各个处理器的方法
+  
   public getKeyboardHandler(): KeyboardEventHandler {
     return this.keyboardHandler;
   }
@@ -29,7 +29,7 @@ export class EventManager {
     return this.mouseHandler;
   }
 
-  // 销毁所有事件处理器
+  
   public destroy() {
     this.keyboardHandler.destroy();
     this.mouseHandler.destroy();

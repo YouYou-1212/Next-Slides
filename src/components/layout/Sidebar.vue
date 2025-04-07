@@ -34,7 +34,7 @@ const frameContainers = ref<Record<string, HTMLElement | null>>({});
 
 const thumbnailManager = ref<ThumbnailManager | null>(null);
 
-// 更新帧列表
+
 const loadFrames = () => {
   if (!props.canvasManager) {
     frames.value = [];
@@ -44,50 +44,50 @@ const loadFrames = () => {
   frames.value = framesList;
 };
 
-// 初始化缩略图管理器的函数
+
 const initThumbnailManager = () => {
   if (props.canvasManager) {
-    console.log("[Sidebar] 初始化缩略图管理器");
+    
     thumbnailManager.value = new ThumbnailManager(
       props.canvasManager,
       frames,
       () => {
-        // 更新开始回调
+        
       },
       () => {
-        // 更新完成回调
+        
       },
       () => {
-        // 初始化完成回调
-        // console.log("[Sidebar] Frame列表已初始化完成，回调函数返回");
+        
+        
         loadFrames();
       }
     );
   }
 };
 
-// 折叠侧边栏
+
 const toggleCollapse = () => {
   emit("update:collapsed", !props.collapsed);
 };
 
-// 获取当前页面
+
 const overview = computed(() => {
   return props.canvasManager?.getPageFrame();
 });
 
-// 计算是否可以添加Frame
+
 const canAddFrame = computed(() => {
   return overview.value != null;
 });
 
-// 处理添加Frame
+
 const handleAddFrame = () => {
   props.canvasManager?.addNewFrame();
-  dropdownVisible.value = false; // 添加后关闭下拉菜单
+  dropdownVisible.value = false; 
 };
 
-// 处理绘制Frame
+
 const handleDrawFrame = () => {
   props.canvasManager?.addNewFrame();
   dropdownVisible.value = false;
@@ -98,68 +98,68 @@ const navigateToFrame = (frame: any) => {
   props.canvasManager.navigateToFrame(frame);
 };
 
-// 切换下拉菜单显示状态
+
 const toggleDropdown = (event: Event) => {
-  event.stopPropagation(); // 阻止事件冒泡
+  event.stopPropagation(); 
   dropdownVisible.value = !dropdownVisible.value;
 };
 
 
-// 点击外部关闭下拉菜单
+
 const closeDropdown = () => {
   dropdownVisible.value = false;
 };
 
-// 处理页面概览容器引用
+
 const handleOverviewContainerRef = (el: any, frameId: string) => {
   overviewContainer.value = el;
   !thumbnailManager.value?.initThumbnailCanvas(PageFrame.type, frameId, el);
 };
 
-// 处理Frame容器引用
+
 const handleFrameContainerRef = (el: any, frameId: string) => {
   frameContainers.value[frameId] = el;
   !thumbnailManager.value?.initThumbnailCanvas(Frame.type, frameId, el);
 };
 
-// 处理页面概览点击事件
+
 const handlePageOverviewClick = (frame: any) => {
   navigateToFrame(frame);
 };
 
-// 处理帧点击事件
+
 const handleFrameClick = (frame: any) => {
   navigateToFrame(frame);
 };
 
-// 监听canvasManager变化
+
 watch(
   () => props.canvasManager,
   (newCanvasManager) => {
-    console.log("[Sidebar] canvasManager 变化:", newCanvasManager);
+    
     if (!thumbnailManager.value) {
-      // 如果thumbnailManager不存在，则初始化
+      
       initThumbnailManager();
     } else {
-      // 如果已存在，则更新canvasManager
+      
       thumbnailManager.value.setCanvasManager(newCanvasManager);
     }
   },
   { immediate: true }
 );
 
-// 组件挂载时初始化
+
 onMounted(() => {
   loadFrames();
   document.addEventListener("click", closeDropdown);
 });
 
-// 组件卸载时清理
+
 onUnmounted(() => {
-  // 释放缩略图管理器资源
+  
   !thumbnailManager.value?.dispose();
 
-  // 移除事件监听器
+  
   document.removeEventListener("click", closeDropdown);
 });
 </script>
@@ -270,7 +270,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  /* 避免双重滚动条 */
+  
   padding: 16px;
   background-color: #fff;
 }
@@ -282,7 +282,7 @@ onUnmounted(() => {
   position: relative;
 }
 
-/* 操作区域样式 */
+
 .operation-group {
   width: 100%;
   margin: 0 auto 0px;
@@ -297,11 +297,11 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-/* 下拉菜单容器 */
+
 .dropdown-container {
   position: relative;
   border-radius: 20px;
-  /* 改为圆角 */
+  
   display: flex;
   width: 100%;
   max-width: 200px;
@@ -315,7 +315,7 @@ onUnmounted(() => {
   width: 100%;
 }
 
-/* Frame按钮 */
+
 .add-frame-button {
   flex: 1;
   height: 36px;
@@ -330,14 +330,14 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   background-color: v-bind("COLORS.PRIMARY") !important;
-  /* 蓝色背景 */
+  
   justify-content: flex-start;
 }
 
-/* 覆盖 Element Plus 的默认图标样式 */
+
 .add-frame-button :deep(.el-icon) {
   color: inherit;
-  /* 继承父元素颜色 */
+  
   display: flex;
   align-items: center;
   justify-content: center;
@@ -363,7 +363,7 @@ onUnmounted(() => {
   border-bottom-right-radius: 4px;
 }
 
-/* 箭头图标样式 */
+
 .arrow-down-icon {
   width: 16px;
   height: 16px;
@@ -377,7 +377,7 @@ onUnmounted(() => {
   text-align: center;
   display: flex;
   align-items: center;
-  /* 垂直居中 */
+  
   justify-content: center;
   color: white;
 }
@@ -387,7 +387,7 @@ onUnmounted(() => {
   background-color: #3c68eb !important;
 }
 
-/* 下拉触发器 */
+
 .dropdown-trigger {
   width: 32px;
   background-color: v-bind("COLORS.PRIMARY");
@@ -401,7 +401,7 @@ onUnmounted(() => {
   border-left: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* 下拉菜单 */
+
 .dropdown-menu {
   position: absolute;
   top: calc(100% + 4px);
@@ -415,7 +415,7 @@ onUnmounted(() => {
   z-index: 10;
 }
 
-/* 下拉菜单项 */
+
 .dropdown-item {
   padding: 8px 12px;
   cursor: pointer;
@@ -431,14 +431,14 @@ onUnmounted(() => {
   background-color: #f5f5f5;
 }
 
-/* 绘制图标样式 */
+
 .draw-icon {
   width: 16px;
   height: 16px;
   color: #666;
 }
 
-/* 图标样式 */
+
 .plus-icon {
   font-size: 16px;
   width: 16px;
@@ -452,7 +452,7 @@ onUnmounted(() => {
   stroke-width: 2;
 }
 
-/* 箭头图标样式 */
+
 .arrow-icon {
   font-size: 16px;
   width: 16px;
@@ -530,13 +530,13 @@ onUnmounted(() => {
   z-index: 100;
 }
 
-/* 图标样式 */
+
 .el-icon {
   vertical-align: middle;
   margin-right: 4px;
 }
 
-/* 按钮内容居中 */
+
 .el-button {
   display: inline-flex;
   align-items: center;
@@ -544,7 +544,7 @@ onUnmounted(() => {
   gap: 0;
 }
 
-/* 帧操作区域样式 */
+
 .frame-operation {
   display: flex;
   flex-direction: column;
@@ -563,7 +563,7 @@ onUnmounted(() => {
   margin-left: auto;
 }
 
-/* 帧列表样式 */
+
 .frames-list {
   display: flex;
   flex-direction: column;
@@ -676,18 +676,18 @@ onUnmounted(() => {
   border-left: 3px solid #1890ff;
 }
 
-/* 确保内容区域不会遮挡按钮 */
+
 .sidebar-content {
   position: relative;
   z-index: 100;
 }
 
-/* 图标样式 */
+
 .el-icon {
   vertical-align: middle;
 }
 
-/* 滚动条样式 */
+
 .frames-list::-webkit-scrollbar {
   width: 6px;
 }

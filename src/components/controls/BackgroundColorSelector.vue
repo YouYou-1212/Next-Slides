@@ -46,7 +46,7 @@ const props = defineProps<{
 
 const selectedColor = ref('#FFFFFF');
 
-// 预设颜色
+
 const presetColors = [
   '#FFFFFF', '#F5F5F5', '#EEEEEE', '#E0E0E0',
   '#FFEBEE', '#FCE4EC', '#F3E5F5', '#EDE7F6',
@@ -55,10 +55,10 @@ const presetColors = [
   '#FFFDE7', '#FFF8E1', '#FFF3E0', '#FBE9E7'
 ];
 
-// 更新颜色方法，直接在组件内处理
+
 const updateColor = () => {
   if (props.canvas) {
-    // 设置画布背景色
+    
     setBackgroundColor(props.canvas , selectedColor.value)
   }
 };

@@ -1,4 +1,4 @@
-// src/types/canvas.ts
+
 export interface PageFrameOptions {
     width: number
     height: number
@@ -19,7 +19,7 @@ export interface PageFrameOptions {
     height: number
     left: number
     top: number
-    // fill: string
+    
     strokeWidth?: number
     shadow?: string
     stroke?: string

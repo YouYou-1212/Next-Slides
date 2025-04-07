@@ -44,22 +44,15 @@
                     <input type="text" v-model="customColorText" @input="onColorTextChange" @blur="validateColorText"
                         class="color-text-input" placeholder="#RRGGBB">
                 </div>
-               
+
             </div>
         </div>
         <!-- 透明度设置 -->
         <div class="color-category">
             <div class="category-title">透明度</div>
             <div class="opacity-control">
-                <input 
-                    type="range" 
-                    min="0" 
-                    max="1" 
-                    step="0.05" 
-                    v-model="currentOpacity" 
-                    @input="updateOpacity"
-                    class="opacity-slider"
-                />
+                <input type="range" min="0" max="1" step="0.05" v-model="currentOpacity" @input="updateOpacity"
+                    class="opacity-slider" />
                 <div class="opacity-value">{{ Math.round(currentOpacity * 100) }}%</div>
             </div>
         </div>
@@ -117,7 +110,7 @@ const selectColor = (color: string) => {
     currentColor.value = color;
     customColorText.value = color === 'transparent' ? '' : color;
     emit('update:color', color);
-    
+
     emit('select', color, currentOpacity.value);
 };
 
@@ -126,7 +119,7 @@ const onColorPickerChange = (event: Event) => {
     const input = event.target as HTMLInputElement;
     customColorText.value = input.value;
 
-    
+
     currentColor.value = input.value;
     emit('update:color', input.value);
 };
@@ -134,7 +127,7 @@ const onColorPickerChange = (event: Event) => {
 
 const onColorTextChange = (event: Event) => {
     const input = event.target as HTMLInputElement;
-    
+
     if (/^#[0-9A-F]{6}$/i.test(input.value)) {
         if (colorPickerInput.value) {
             colorPickerInput.value.value = input.value;
@@ -144,7 +137,7 @@ const onColorTextChange = (event: Event) => {
 
 
 const validateColorText = () => {
-    
+
     if (!customColorText.value || !/^#[0-9A-F]{6}$/i.test(customColorText.value)) {
         customColorText.value = currentColor.value === 'transparent' ? '#000000' : currentColor.value;
     }

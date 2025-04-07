@@ -52,47 +52,47 @@ const fileInput = ref<HTMLInputElement | null>(null);
 const imageList = ref<{ url: string; thumbnail: string; author: string }[]>([]);
 const page = ref(1);
 const isLoading = ref(false);
-const limit = 50; // 每页加载的图片数量
-const imageHeight = 1200; // 背景图片高度
-const imageWidth = 2133; // 背景图片宽度 (16:9比例)
-const thumbnailSize = 300; // 缩略图尺寸
+const limit = 50; 
+const imageHeight = 1200; 
+const imageWidth = 2133; 
+const thumbnailSize = 300; 
 
-// 处理图片选择按钮点击
+
 const handleSelectImage = () => {
   if (fileInput.value) {
     fileInput.value.click();
   }
 };
 
-// 处理文件选择
+
 const onFileSelected = (event: Event) => {
   const input = event.target as HTMLInputElement;
   if (input.files && input.files[0]) {
     const file = input.files[0];
-    // 使用 URL.createObjectURL 替代 FileReader
+    
     const objectUrl = URL.createObjectURL(file);
     const canvas = props.canvas;
     if (!canvas) {
-      // 如果没有画布，释放 URL 对象
+      
       URL.revokeObjectURL(objectUrl);
       return;
     }
     
-    console.log("文件选择器选择的内容为：", objectUrl);
+    
     setBackgroundImageByUrl(canvas, objectUrl);
 
-    // 重置文件输入，以便可以再次选择同一文件
+    
     input.value = '';
   }
 };
 
-// 从Picsum Photos加载图片
+
 const loadImages = async () => {
   if (isLoading.value) return;
   
   isLoading.value = true;
   try {
-    // 使用Picsum Photos的列表API获取图片数据
+    
     const response = await fetch(`https://picsum.photos/v2/list?page=${page.value}&limit=${limit}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -100,11 +100,11 @@ const loadImages = async () => {
     
     const data = await response.json();
     
-    // 处理返回的图片数据
+    
     const newImages = data.map((item: any) => {
-      // 从download_url中提取图片ID
+      
       const id = item.id;
-      // 构建高分辨率图片URL和缩略图URL
+      
       const imageUrl = `https://picsum.photos/id/${id}/${imageWidth}/${imageHeight}`;
       const thumbnailUrl = `https://picsum.photos/id/${id}/${thumbnailSize}/${thumbnailSize}`;
       
@@ -115,7 +115,7 @@ const loadImages = async () => {
       };
     });
     
-    // 添加到图片列表
+    
     imageList.value = [...imageList.value, ...newImages];
     page.value++;
   } catch (error) {
@@ -125,18 +125,18 @@ const loadImages = async () => {
   }
 };
 
-// 加载更多图片
+
 const loadMoreImages = () => {
   loadImages();
 };
 
-// 设置背景图片
+
 const setBackgroundFromUrl = (url: string) => {
   if (!props.canvas) return;
   setBackgroundImageByUrl(props.canvas, url);
 };
 
-// 组件挂载时加载初始图片
+
 onMounted(() => {
   loadImages();
 });
@@ -177,7 +177,7 @@ onMounted(() => {
   background-color: #40a9ff;
 }
 
-/* 图片列表样式 */
+
 .image-list-container {
   width: 100%;
   margin-top: 20px;

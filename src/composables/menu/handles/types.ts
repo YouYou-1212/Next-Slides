@@ -15,7 +15,7 @@ export interface HandlerContext {
 }
 
 export interface HandlerParams {
-  // canvas: fabric.Canvas;
+  
   target?: fabric.Object | null;
   position?: Position;
 }

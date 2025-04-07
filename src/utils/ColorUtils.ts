@@ -1,7 +1,4 @@
-/**
- * 颜色工具类
- * 提供颜色相关的工具方法和常量
- */
+
 export class ColorUtils {
   // 预定义的Frame颜色列表
   public static readonly FRAME_COLORS: string[] = [
@@ -124,20 +121,12 @@ export class ColorUtils {
     "#f35336", // 彤红
   ];
 
-  /**
-   * 从指定的颜色数组中随机获取一个颜色
-   * @param colors 颜色数组，默认使用FRAME_COLORS
-   * @returns 随机选择的颜色
-   */
+  
   public static getRandomColor(colors: string[] = ColorUtils.FRAME_COLORS): string {
     return colors[Math.floor(Math.random() * colors.length)];
   }
 
-  /**
-   * 生成完全随机的颜色
-   * @param opacity 透明度，默认为1
-   * @returns 随机生成的颜色
-   */
+  
   public static generateRandomColor(opacity: number = 1): string {
     const r = Math.floor(Math.random() * 256);
     const g = Math.floor(Math.random() * 256);
@@ -147,10 +136,7 @@ export class ColorUtils {
       : `rgba(${r}, ${g}, ${b}, ${opacity})`;
   }
 
-  /**
-   * 生成柔和的随机颜色（高亮度、低饱和度）
-   * @returns 柔和的随机颜色
-   */
+  
   public static generateSoftRandomColor(): string {
     // 使用HSL颜色模型生成柔和颜色
     const h = Math.floor(Math.random() * 360); // 随机色相
@@ -159,22 +145,12 @@ export class ColorUtils {
     return `hsl(${h}, ${s}%, ${l}%)`;
   }
 
-  /**
-   * 根据索引获取颜色，如果索引超出范围则循环使用
-   * @param index 索引值
-   * @param colors 颜色数组，默认使用FRAME_COLORS
-   * @returns 对应索引的颜色
-   */
+  
   public static getColorByIndex(index: number, colors: string[] = ColorUtils.FRAME_COLORS): string {
     return colors[index % colors.length];
   }
 
-  /**
-   * 调整颜色的透明度
-   * @param color 颜色值（十六进制或RGB格式）
-   * @param opacity 透明度（0-1之间）
-   * @returns 带透明度的颜色
-   */
+  
   public static setColorOpacity(color: string, opacity: number): string {
     // 处理十六进制颜色
     if (color.startsWith('#')) {
@@ -195,22 +171,12 @@ export class ColorUtils {
     return color;
   }
 
-  /**
-   * 将RGB颜色转换为十六进制格式
-   * @param r 红色分量 (0-255)
-   * @param g 绿色分量 (0-255)
-   * @param b 蓝色分量 (0-255)
-   * @returns 十六进制颜色字符串
-   */
+  
   public static rgbToHex(r: number, g: number, b: number): string {
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
   }
 
-  /**
-   * 将十六进制颜色转换为RGB格式
-   * @param hex 十六进制颜色字符串
-   * @returns RGB颜色对象 {r, g, b}
-   */
+  
   public static hexToRgb(hex: string): {r: number, g: number, b: number} | null {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? {
@@ -220,12 +186,7 @@ export class ColorUtils {
     } : null;
   }
 
-  /**
-   * 生成颜色的明暗变体
-   * @param color 基础颜色
-   * @param amount 调整量 (正值变亮，负值变暗)
-   * @returns 调整后的颜色
-   */
+  
   public static shadeColor(color: string, amount: number): string {
     const rgb = ColorUtils.hexToRgb(color);
     if (!rgb) return color;
@@ -238,12 +199,7 @@ export class ColorUtils {
     return ColorUtils.rgbToHex(newR, newG, newB);
   }
 
-  /**
-   * 获取颜色选择器的HTML
-   * @param id 选择器ID
-   * @param initialColor 初始颜色
-   * @returns 颜色选择器HTML字符串
-   */
+  
   public static getColorPickerHtml(id: string, initialColor: string = '#1890ff'): string {
     return `
       <div class="color-picker-container" style="margin: 10px 0;">
@@ -259,11 +215,7 @@ export class ColorUtils {
     `;
   }
 
-  /**
-   * 初始化颜色选择器的事件监听
-   * @param id 选择器ID
-   * @param onChange 颜色变化回调函数
-   */
+  
   public static initColorPicker(id: string, onChange?: (color: string) => void): void {
     if (typeof document === 'undefined') return; // 服务器端渲染时跳过
 

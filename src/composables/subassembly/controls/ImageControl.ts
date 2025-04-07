@@ -5,10 +5,10 @@ import * as fabric from "fabric";
 
 export class ImageControl extends fabric.FabricImage {
   static type = "ImageControl";
-  // 填充颜色属性
+  
   private _fillColor: string | null = null;
   private _fillOpacity: number = 0.5;
-  // 圆角属性
+  
   private _cornerRadius: {
     topLeft: number;
     topRight: number;
@@ -20,22 +20,22 @@ export class ImageControl extends fabric.FabricImage {
       bottomRight: 0,
       bottomLeft: 0
     };
-  //拖动状态标记
+  
   private _isMoving: boolean = false;
 
   static async create(url: string, options: any) {
     return new Promise((resolve, reject) => {
-      // 设置默认以中心点为基准
+      
       const defaultOptions = {
         originX: 'center',
         originY: 'center',
-        //内边距
+        
         padding: 0,
         ...options
       };
-      // fabric.loadSVGFromURL
+      
       ImageControl.fromURL(url, { crossOrigin: 'anonymous' }, defaultOptions).then((fabricImage: any) => {
-        // data:image/svg+xml,
+        
         if (options.fillColor !== undefined) {
           fabricImage._fillColor = options.fillColor;
         }
@@ -48,7 +48,7 @@ export class ImageControl extends fabric.FabricImage {
             ...options.cornerRadius
           };
         } else if (options.rx !== undefined) {
-          // 可以直接设置rx/ry，此时所有角同一个半径
+          
           const radius = options.rx;
           fabricImage._cornerRadius = {
             topLeft: radius,
@@ -66,32 +66,32 @@ export class ImageControl extends fabric.FabricImage {
 
   constructor(element: HTMLImageElement, options: any) {
     const defaultOptions = {
-      // cornerSize: SIZES.CORNER_SIZE,
-      // cornerColor: COLORS.PRIMARY,
-      // cornerStyle: "circle",
-      // transparentCorners: false,
-      // hasRotatingPoint: false,
-      // padding: 0,
-      // borderColor: COLORS.PRIMARY,
-      // lockRotation: true,
-      // // 添加缩放相关配置
-      // lockScalingX: false,
-      // lockScalingY: false,
-      // lockUniScaling: false,  // 允许非等比缩放
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       ...options,
     };
 
     super(element, defaultOptions);
 
 
-    // 初始化填充颜色和透明度
+    
     if (options && options.fillColor) {
       this._fillColor = options.fillColor;
     }
     if (options && options.fillOpacity !== undefined) {
       this._fillOpacity = options.fillOpacity;
     }
-    // 初始化圆角属性
+    
     if (options && options.cornerRadius) {
       this._cornerRadius = {
         ...this._cornerRadius,
@@ -107,30 +107,30 @@ export class ImageControl extends fabric.FabricImage {
       };
     }
 
-    // 隐藏旋转控制点
+    
     this.setControlsVisibility({
       mtr: false,
     });
 
-    // 设置对象类型
+    
     Object.defineProperty(this, 'type', {
       value: ImageControl.type,
       configurable: false,
       writable: false
     });
-    // this.on('moving', this.handleMoving.bind(this));
-    // this.on('mouseup', this.handleMoveEnd.bind(this));
-    // this.on('deselected', this.handleMoveEnd.bind(this));
+    
+    
+    
   }
 
 
-  // 处理移动开始事件
+  
   private handleMoving(): void {
     this._isMoving = true;
     EventBus.emit(EventTypes.CONTROL_PANEL.HIDE_IMAGE_SETTING_TOOLBAR);
   }
 
-  // 处理移动结束事件
+  
   private handleMoveEnd(): void {
     this._isMoving = false;
     EventBus.emit(EventTypes.CONTROL_PANEL.SHOW_IMAGE_SETTING_TOOLBAR, {
@@ -143,36 +143,36 @@ export class ImageControl extends fabric.FabricImage {
   _render(ctx: CanvasRenderingContext2D): void {
     const hasCorners = Object.values(this._cornerRadius).some(value => value > 0);
     if (!hasCorners) {
-      // 如果没有圆角，直接调用父类的渲染方法
+      
       super._render(ctx);
     } else {
       ctx.save();
       const width = this.width || 0;
       const height = this.height || 0;
 
-      // 计算实际的圆角半径（不能超过宽高的一半）
+      
       this._renderRoundedRectWithDifferentCorners(ctx, -width / 2, -height / 2, width, height);
       ctx.clip();
       super._render(ctx);
       ctx.restore();
     }
 
-    // 如果设置了填充颜色，则在图片上方绘制一个半透明的颜色层
+    
     if (this._fillColor) {
       ctx.save();
       ctx.fillStyle = this._fillColor;
       ctx.globalAlpha = this._fillOpacity;
 
-      // 获取图片的宽高
+      
       const width = this.width || 0;
       const height = this.height || 0;
 
       if (hasCorners) {
-        // 如果有圆角，需要绘制圆角矩形
+        
         this._renderRoundedRectWithDifferentCorners(ctx, -width / 2, -height / 2, width, height);
         ctx.fill();
       } else {
-        // 否则绘制普通矩形
+        
         ctx.fillRect(-width / 2, -height / 2, width, height);
       }
 
@@ -180,11 +180,11 @@ export class ImageControl extends fabric.FabricImage {
     }
   }
 
-  // 绘制带有不同圆角的矩形路径
+  
   private _renderRoundedRectWithDifferentCorners(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number): void {
     const { topLeft, topRight, bottomRight, bottomLeft } = this._cornerRadius;
 
-    // 确保圆角半径不超过宽高的一半
+    
     const maxWidth = width / 2;
     const maxHeight = height / 2;
 
@@ -195,7 +195,7 @@ export class ImageControl extends fabric.FabricImage {
 
     ctx.beginPath();
 
-    // 从左上角开始，顺时针绘制
+    
     if (tl > 0) {
       ctx.moveTo(x + tl, y);
       ctx.arcTo(x, y, x, y + tl, tl);
@@ -203,7 +203,7 @@ export class ImageControl extends fabric.FabricImage {
       ctx.moveTo(x, y);
     }
 
-    // 左边到左下角
+    
     if (bl > 0) {
       ctx.lineTo(x, y + height - bl);
       ctx.arcTo(x, y + height, x + bl, y + height, bl);
@@ -211,7 +211,7 @@ export class ImageControl extends fabric.FabricImage {
       ctx.lineTo(x, y + height);
     }
 
-    // 底边到右下角
+    
     if (br > 0) {
       ctx.lineTo(x + width - br, y + height);
       ctx.arcTo(x + width, y + height, x + width, y + height - br, br);
@@ -219,7 +219,7 @@ export class ImageControl extends fabric.FabricImage {
       ctx.lineTo(x + width, y + height);
     }
 
-    // 右边到右上角
+    
     if (tr > 0) {
       ctx.lineTo(x + width, y + tr);
       ctx.arcTo(x + width, y, x + width - tr, y, tr);
@@ -227,13 +227,13 @@ export class ImageControl extends fabric.FabricImage {
       ctx.lineTo(x + width, y);
     }
 
-    // 顶边回到起点
+    
     ctx.lineTo(x + tl, y);
 
     ctx.closePath();
   }
 
-  // 绘制圆角矩形路径
+  
   private _renderRoundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, rx: number, ry: number): void {
     ctx.beginPath();
     ctx.moveTo(x + rx, y);
@@ -248,7 +248,7 @@ export class ImageControl extends fabric.FabricImage {
     ctx.closePath();
   }
 
-  // 设置所有角的圆角半径
+  
   setCornerRadius(radius: number): this {
     this._cornerRadius = {
       topLeft: Math.max(0, radius),
@@ -257,7 +257,7 @@ export class ImageControl extends fabric.FabricImage {
       bottomLeft: Math.max(0, radius)
     };
 
-    // 标记对象需要重绘
+    
     this.dirty = true;
     if (this.canvas) {
       this.canvas.requestRenderAll();
@@ -266,11 +266,11 @@ export class ImageControl extends fabric.FabricImage {
     return this;
   }
 
-  // 设置单个角的圆角半径
+  
   setCornerRadiusForCorner(corner: 'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft', radius: number): this {
     this._cornerRadius[corner] = Math.max(0, radius);
 
-    // 标记对象需要重绘
+    
     this.dirty = true;
     if (this.canvas) {
       this.canvas.requestRenderAll();
@@ -279,14 +279,14 @@ export class ImageControl extends fabric.FabricImage {
     return this;
   }
 
-  // 设置多个角的圆角半径
+  
   setCornerRadii(cornerRadii: Partial<typeof this._cornerRadius>): this {
     this._cornerRadius = {
       ...this._cornerRadius,
       ...cornerRadii
     };
 
-    // 标记对象需要重绘
+    
     this.dirty = true;
     if (this.canvas) {
       this.canvas.requestRenderAll();
@@ -294,25 +294,25 @@ export class ImageControl extends fabric.FabricImage {
     return this;
   }
 
-  // 获取圆角值
+  
   getCornerRadius(): typeof this._cornerRadius {
     return { ...this._cornerRadius };
   }
 
-  // 设置填充颜色
+  
   setFillColor(color: string | null, opacity?: number): this {
     if (this._element && this._element.tagName === 'svg') {
       this._element.setAttribute('fill', color || 'none');
     } else {
-      // 普通图片的处理逻辑
+      
       this._fillColor = color;
     }
 
     if (opacity !== undefined) {
-      this._fillOpacity = Math.max(0, Math.min(1, opacity)); // 确保透明度在 0-1 之间
+      this._fillOpacity = Math.max(0, Math.min(1, opacity)); 
     }
 
-    // 标记对象需要重绘
+    
     this.dirty = true;
     if (this.canvas) {
       this.canvas.requestRenderAll();
@@ -321,7 +321,7 @@ export class ImageControl extends fabric.FabricImage {
     return this;
   }
 
-  // 获取填充颜色
+  
   getFillColor(): { color: string | null, opacity: number } {
     return {
       color: this._fillColor,
@@ -330,7 +330,7 @@ export class ImageControl extends fabric.FabricImage {
   }
 
 
-  // 替换图片资源方法
+  
   replaceImage(url: string): Promise<this> {
     return new Promise((resolve, reject) => {
       this.setSrc(url, { crossOrigin: 'anonymous' })
@@ -340,7 +340,7 @@ export class ImageControl extends fabric.FabricImage {
             this.canvas.requestRenderAll();
           }
 
-          console.log('[ImageControl] 图片替换成功');
+          
           resolve(this);
         })
         .catch((error) => {
@@ -362,7 +362,7 @@ export class ImageControl extends fabric.FabricImage {
           src: img.src
         });
         
-        // 恢复自定义属性
+        
         if (object._fillColor !== undefined) {
           imageControl._fillColor = object._fillColor;
         }
@@ -380,7 +380,7 @@ export class ImageControl extends fabric.FabricImage {
           };
         }
         
-        // 复制其他必要的属性
+        
         imageControl.set({
           left: object.left,
           top: object.top,
@@ -398,8 +398,8 @@ export class ImageControl extends fabric.FabricImage {
           cropY: object.cropY
         });
         
-        // 标记需要重绘
-        // imageControl.dirty = true;
+        
+        
         return imageControl;
       });
   

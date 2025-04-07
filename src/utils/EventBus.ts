@@ -1,12 +1,9 @@
-/**
- * 自定义事件总线
- * 所有自定义事件类型都在这里定义
- */
+
 
 type EventCallback = (payload?: any) => void;
 
 
-// 定义事件类型常量
+
 export const EventTypes = {
   CONTROL_PANEL: {
     OPEN: 'open-control-panel',
@@ -15,6 +12,11 @@ export const EventTypes = {
     SHOW_IMAGE_SETTING_TOOLBAR: 'control-panel:show-image-toolbar',
     HIDE_IMAGE_SETTING_TOOLBAR: 'control-panel:hide-image-setting-toolbar',
     UPDATE_IMAGE_SETTING_TOOLBAR: 'control-panel:update-image-setting-toolbar',
+    SHOW_GROUP_SETTING_TOOLBAR: 'control-panel:show-group-toolbar',
+    HIDE_GROUP_SETTING_TOOLBAR: 'control-panel:hide-group-setting-toolbar',
+    SHOW_SHAPE_SETTING_TOOLBAR: 'control-panel:show-shape-toolbar',
+    HIDE_SHAPE_SETTING_TOOLBAR: 'control-panel:hide-shape-setting-toolbar',
+
   },
   PANEL_TYPE: {
     BACKGROUND_IMAGE: 'background-image',
@@ -22,17 +24,17 @@ export const EventTypes = {
     INSERT_IMAGE: 'insert-image',
   },
   PANEL_ACTION: {
-    //替换图片
+    
     REPLACE_IMAGE: 'replace-image',
   },
-  // 添加画布背景变化事件
+  
   CANVAS: {
     CANVAS_UPDATE:'canvas:update',
     BACKGROUND_COLOR_CHANGE: 'canvas:background-color-change',
     BACKGROUND_IMAGE_CHANGE: 'canvas:background-image-change',
     ZOOM_CHANGE: 'canvas:zoom-change'
   },
-  // 添加Frame相关事件
+  
   FRAME: {
     FRAME_ADDED: 'frame:added',
     FRAME_REMOVED: 'frame:removed',
@@ -61,7 +63,7 @@ class EventBusClass {
     if (!this.events.has(event)) return;
     
     if (callback) {
-      // 如果提供了回调函数，只移除特定的回调
+      
       const callbacks = this.events.get(event)!;
       const index = callbacks.indexOf(callback);
       if (index !== -1) {
@@ -72,7 +74,7 @@ class EventBusClass {
         this.events.delete(event);
       }
     } else {
-      // 如果没有提供回调函数，移除该事件的所有监听器
+      
       this.events.delete(event);
     }
   }

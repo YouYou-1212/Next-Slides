@@ -1,14 +1,8 @@
-/** 
- * 辅助线
- */
-import * as fabric from "fabric";
-// import { ILineOptions } from "fabric/fabric-impl";
 
-  /**
- * Should objects be aligned by a bounding box?
- * [Bug] Scaled objects sometimes can not be aligned by edges
- *
- */
+import * as fabric from "fabric";
+
+
+  
 export function initAligningGuidelines(canvas: fabric.Canvas) {
 
   var ctx = canvas.getSelectionContext(),
@@ -63,7 +57,7 @@ export function initAligningGuidelines(canvas: fabric.Canvas) {
   canvas.on('mouse:down', function () {
     viewportTransform = canvas.viewportTransform;
     zoom = canvas.getZoom();
-    console.log("缩放大小：" , zoom);
+    
   });
 
   canvas.on('object:moving', function(e) {
@@ -71,14 +65,7 @@ export function initAligningGuidelines(canvas: fabric.Canvas) {
     let activeObject = e.target;
     if(!activeObject || !viewportTransform) return;
 
-    /**
-      - viewportTransform[0] （a）：水平缩放因子
-      - viewportTransform[1] （b）：水平倾斜因子
-      - viewportTransform[2] （c）：垂直倾斜因子
-      - viewportTransform[3] （d）：垂直缩放因子
-      - viewportTransform[4] （e）：水平移动距离
-      - viewportTransform[5] （f）：垂直移动距离
-     */
+    
       let canvasObjects = canvas.getObjects();
       let activeObjectCenter = activeObject.getCenterPoint(),
       activeObjectLeft = activeObjectCenter.x,
@@ -89,14 +76,14 @@ export function initAligningGuidelines(canvas: fabric.Canvas) {
       horizontalInTheRange = false,
       verticalInTheRange = false,
       transform = canvas.viewportTransform
-      // console.log("activeObject viewportTransform：" , viewportTransform[0] , viewportTransform[3]);
-      // console.log("activeObject：" , activeObjectLeft , activeObjectTop , activeObjectBoundingRect , activeObjectWidth , activeObjectHeight);
+      
+      
     
       
     if (!transform) return;
 
-    // It should be trivial to DRY this up by encapsulating (repeating) creation of x1, x2, y1, and y2 into functions,
-    // but we're not doing it here for perf. reasons -- as this a function that's invoked on every mouse move
+    
+    
 
     for (var i = canvasObjects.length; i--; ) {
 
@@ -109,7 +96,7 @@ export function initAligningGuidelines(canvas: fabric.Canvas) {
           objectHeight = objectBoundingRect.height / viewportTransform[3],
           objectWidth = objectBoundingRect.width / viewportTransform[0];
 
-      // snap by the horizontal center line
+      
       if (isInRange(objectLeft, activeObjectLeft)) {
         verticalInTheRange = true;
         verticalLines.push({
@@ -124,7 +111,7 @@ export function initAligningGuidelines(canvas: fabric.Canvas) {
         activeObject.setPositionByOrigin(new fabric.Point(objectLeft, activeObjectTop), 'center', 'center');
       }
 
-      // snap by the left edge
+      
       if (isInRange(objectLeft - objectWidth / 2, activeObjectLeft - activeObjectWidth / 2)) {
         verticalInTheRange = true;
         verticalLines.push({
@@ -139,7 +126,7 @@ export function initAligningGuidelines(canvas: fabric.Canvas) {
         activeObject.setPositionByOrigin(new fabric.Point(objectLeft - objectWidth / 2 + activeObjectWidth / 2, activeObjectTop), 'center', 'center');
       }
 
-      // snap by the right edge
+      
       if (isInRange(objectLeft + objectWidth / 2, activeObjectLeft + activeObjectWidth / 2)) {
         verticalInTheRange = true;
         verticalLines.push({
@@ -154,7 +141,7 @@ export function initAligningGuidelines(canvas: fabric.Canvas) {
         activeObject.setPositionByOrigin(new fabric.Point(objectLeft + objectWidth / 2 - activeObjectWidth / 2, activeObjectTop), 'center', 'center');
       }
 
-      // snap by the vertical center line
+      
       if (isInRange(objectTop, activeObjectTop)) {
         horizontalInTheRange = true;
         horizontalLines.push({
@@ -169,7 +156,7 @@ export function initAligningGuidelines(canvas: fabric.Canvas) {
         activeObject.setPositionByOrigin(new fabric.Point(activeObjectLeft, objectTop), 'center', 'center');
       }
 
-      // snap by the top edge
+      
       if (isInRange(objectTop - objectHeight / 2, activeObjectTop - activeObjectHeight / 2)) {
         horizontalInTheRange = true;
         horizontalLines.push({
@@ -184,7 +171,7 @@ export function initAligningGuidelines(canvas: fabric.Canvas) {
         activeObject.setPositionByOrigin(new fabric.Point(activeObjectLeft, objectTop - objectHeight / 2 + activeObjectHeight / 2), 'center', 'center');
       }
 
-      // snap by the bottom edge
+      
       if (isInRange(objectTop + objectHeight / 2, activeObjectTop + activeObjectHeight / 2)) {
         horizontalInTheRange = true;
         horizontalLines.push({

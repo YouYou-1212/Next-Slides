@@ -1,6 +1,6 @@
-// 字体名称映射表（英文到中文）
+
 export const fontNameMapping: Record<string, string> = {
-    // 中文字体
+    
     'Microsoft YaHei': '微软雅黑',
     'Microsoft YaHei UI': '微软雅黑 UI',
     'SimSun': '宋体',
@@ -69,7 +69,7 @@ export const fontNameMapping: Record<string, string> = {
     'Founder Song': '方正书宋简体',
     'Founder Old': '方正老宋简体',
 
-    // 英文字体
+    
     'Arial': 'Arial 标准',
     'Arial Black': 'Arial 黑体',
     'Comic Sans MS': 'Comic Sans 手写体',
@@ -101,20 +101,20 @@ export const fontNameMapping: Record<string, string> = {
     'Brush Script MT': 'Brush Script MT 笔刷体',
 };
 
-// 获取系统字体并应用中文映射
+
 export async function getSystemFonts(): Promise<Array<{ label: string, value: string }>> {
     try {
         if ("queryLocalFonts" in window) {
             const availableFonts = await (window as any).queryLocalFonts();
 
-            // 转换为需要的格式，并应用中文映射
+            
             const formattedFonts = availableFonts.map((font: { family: string }) => ({
-                // 使用映射表获取中文名称，如果没有则使用原名
+                
                 label: fontNameMapping[font.family] || font.family, 
                 value: font.family
             }));
 
-            // 去重
+            
             const uniqueFonts = [];
             const fontMap = new Map();
 
@@ -136,7 +136,7 @@ export async function getSystemFonts(): Promise<Array<{ label: string, value: st
     }
 }
 
-// 默认字体列表
+
 export const defaultFonts = [
     { label: '微软雅黑', value: 'Microsoft YaHei' },
     { label: '宋体', value: 'SimSun' },

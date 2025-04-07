@@ -115,15 +115,15 @@ import { EventBus, EventTypes } from '../../utils/EventBus';
 import ColorPicker from './ColorPicker.vue';
 
 import { RoundedCornerOutlined } from '@vicons/material'
-import { PictureControl } from '@/composables/subassembly/controls/PictureControl';
-import type { ImageControl } from '@/composables/subassembly/controls/ImageControl';
+import { PictureControl } from '../../composables/subassembly/controls/PictureControl';
+import type { ImageControl } from '../../composables/subassembly/controls/ImageControl';
 
 const props = defineProps<{
     canvasManager?: any;
     panelData?: any;
 }>();
 
-// 添加防抖函数
+
 function debounce(fn: Function, delay: number) {
     let timer: number | null = null;
     return function (...args: any[]) {
@@ -139,7 +139,7 @@ const visible = ref(false);
 const targetObject = ref<PictureControl | null>(null);
 const position = ref({ top: 0, left: 0 });
 
-// 图片样式状态
+
 const imageFilter = ref('none');
 const hasFillColor = ref(false);
 const fillColor = ref('#FFFFFF');
@@ -162,7 +162,7 @@ const opacity = ref(1);
 
 const isSvgImage = ref(false);
 
-// 图片滤镜选项
+
 const imageFilters = [
     { label: '无滤镜', value: 'none' },
     { label: '灰度', value: 'grayscale' },
@@ -172,7 +172,7 @@ const imageFilters = [
     { label: '锐化', value: 'sharpen' },
 ];
 
-// 计算工具栏位置
+
 const toolbarStyle = computed(() => {
     return {
         top: `${position.value.top}px`,
@@ -181,20 +181,20 @@ const toolbarStyle = computed(() => {
 });
 
 
-// 处理填充颜色选择
+
 const handleFillColorSelect = (color: string, opacity: number) => {
     setFillColor(color, opacity);
     showFillColorPicker.value = false;
 };
 
-// 显示颜色选择器
+
 const showColorPickerDirectly = () => {
     showCornerRadiusPanel.value = false;
     showFillColorPicker.value = !showFillColorPicker.value;
 };
 
 
-// 设置填充颜色
+
 const setFillColor = (color: string, opacity: number = 0.3) => {
     if (!targetObject.value) return;
 
@@ -205,7 +205,7 @@ const setFillColor = (color: string, opacity: number = 0.3) => {
 };
 
 
-// 更新图片样式状态
+
 const updateImageStyleState = () => {
     if (!targetObject.value) return;
     if (targetObject.value.isSvg()) {
@@ -225,9 +225,9 @@ const updateImageStyleState = () => {
             hasFillColor.value = !!imgObj.fill;
             fillColor.value = imgObj.fill || '#FFFFFF';
         }
-        // 获取圆角状态
+        
         syncHasRoundCorners(imgObj.getInnerControl());
-        // 获取透明度
+        
         opacity.value = imgObj.opacity !== undefined ? imgObj.opacity : 1;
     }
 };
@@ -237,23 +237,23 @@ const syncHasRoundCorners = (imgObj: any) => {
     hasRoundCorners.value = Object.values(cornerRadiusValues).some((radius) => (radius as number) > 0);
 }
 
-// 获取应用的滤镜
+
 const getAppliedFilter = (obj: PictureControl) => {
     if (!obj) return 'none';
     return obj.getAppliedFilterType();
 };
 
-// 更改图片滤镜
+
 const changeImageFilter = () => {
     if (!targetObject.value) return;
     targetObject.value.applyFilter(imageFilter.value);
 };
 
-// 切换圆角面板显示
+
 const toggleCornerRadiusPanel = () => {
     showCornerRadiusPanel.value = !showCornerRadiusPanel.value;
 
-    // 如果显示面板，初始化圆角值
+    
     if (showCornerRadiusPanel.value && targetObject.value) {
         const imgObj = targetObject.value as any;
         const imgCornerRadius = imgObj.getCornerRadius();
@@ -269,15 +269,15 @@ const toggleCornerRadiusPanel = () => {
 const updateCornerRadiusDebounced = debounce((corner: string, value: number) => {
     if (!targetObject.value) return;
 
-    // 更新对应的圆角值
+    
     cornerRadius.value[corner as keyof typeof cornerRadius.value] = value;
 
-    // 应用圆角设置
+    
     updateCornerRadius();
 }, 100);
 
 
-// 更新圆角半径
+
 const updateCornerRadius = () => {
     if (!targetObject.value) return;
     const imgObj = targetObject.value;
@@ -290,11 +290,11 @@ const updateCornerRadius = () => {
     syncHasRoundCorners(imgObj);
 };
 
-// 应用统一圆角
+
 const applyUniformRadius = () => {
     if (!targetObject.value) return;
 
-    // 取最大值作为统一圆角值
+    
     const maxRadius = Math.max(
         cornerRadius.value.topLeft,
         cornerRadius.value.topRight,
@@ -312,7 +312,7 @@ const applyUniformRadius = () => {
     updateCornerRadius();
 };
 
-// 重置圆角
+
 const resetCornerRadius = () => {
     if (!targetObject.value) return;
 
@@ -327,14 +327,14 @@ const resetCornerRadius = () => {
 };
 
 
-// 切换圆角
+
 const toggleRoundCorners = (event: MouseEvent) => {
-    event.stopPropagation(); // 阻止事件冒泡
+    event.stopPropagation(); 
     showFillColorPicker.value = false;
     toggleCornerRadiusPanel();
 };
 
-// 更改透明度
+
 const changeOpacity = () => {
     if (!targetObject.value) return;
 
@@ -344,7 +344,7 @@ const changeOpacity = () => {
     props.canvasManager?.canvas.renderAll();
 };
 
-// 水平翻转
+
 const flipHorizontal = () => {
     if (!targetObject.value) return;
 
@@ -354,7 +354,7 @@ const flipHorizontal = () => {
     props.canvasManager?.canvas.renderAll();
 };
 
-// 垂直翻转
+
 const flipVertical = () => {
     if (!targetObject.value) return;
 
@@ -364,7 +364,7 @@ const flipVertical = () => {
     props.canvasManager?.canvas.renderAll();
 };
 
-// 替换图片
+
 const replaceImage = () => {
     EventBus.emit(EventTypes.CONTROL_PANEL.OPEN, {
         type: EventTypes.PANEL_TYPE.INSERT_IMAGE,
@@ -376,7 +376,7 @@ const replaceImage = () => {
     });
 };
 
-// 计算工具栏位置
+
 const calculatePosition = () => {
     if (!targetObject.value || !props.canvasManager?.canvas) return;
 
@@ -388,14 +388,14 @@ const calculatePosition = () => {
 
     if (!vpt) return;
 
-    // 计算对象在视口中的位置
+    
     const objLeft = (objBounds.left * zoom + vpt[4]);
     const objTop = (objBounds.top * zoom + vpt[5]);
     const objWidth = objBounds.width * zoom;
     const objHeight = objBounds.height * zoom;
 
     nextTick(() => {
-        // 获取工具栏元素和屏幕尺寸
+        
         const toolbarEl = document.querySelector('.image-format-toolbar') as HTMLElement;
         const toolbarWidth = toolbarEl ? toolbarEl.offsetWidth : 300;
         const toolbarHeight = toolbarEl ? toolbarEl.offsetHeight : 50;
@@ -403,21 +403,21 @@ const calculatePosition = () => {
         const screenWidth = window.innerWidth;
         const screenHeight = window.innerHeight;
 
-        // 将工具栏放在对象上方并水平居中
+        
         let left = objLeft + (objWidth / 2) - (toolbarWidth / 2);
         let top = objTop - toolbarHeight - 15;
 
-        // 确保工具栏在屏幕范围内
+        
         left = Math.max(10, Math.min(left, screenWidth - toolbarWidth - 10));
         top = Math.max(10, Math.min(top, screenHeight - toolbarHeight - 10));
 
-        // 设置位置
+        
         position.value = { left, top };
     });
 
 };
 
-// 监听 panelData 变化
+
 watch(() => props.panelData, (newData) => {
     if (newData && newData.target) {
         targetObject.value = newData.target;
@@ -428,7 +428,7 @@ watch(() => props.panelData, (newData) => {
     }
 }, { immediate: true, deep: true });
 
-// 点击其他地方关闭颜色选择器
+
 onMounted(() => {
     document.addEventListener('click', (event) => {
         if (!showFillColorPicker.value && !showCornerRadiusPanel.value) return;
@@ -564,7 +564,7 @@ button.active {
     margin: 0;
 }
 
-/* 图标样式 */
+
 i.fas {
     font-size: 12px;
     width: 12px;
@@ -574,7 +574,7 @@ i.fas {
     justify-content: center;
 }
 
-/* SVG 图标样式 */
+
 .icon-image {
     width: 12px;
     height: 12px;
@@ -660,13 +660,13 @@ button.active .icon-image {
     min-width: 80px;
 }
 
-/* 覆盖 Naive UI 的默认样式 */
+
 :deep(.n-button) {
     font-size: 12px;
     padding: 0 12px;
 }
 
-/* 添加工具提示样式 */
+
 button[title]:hover::after {
     content: attr(title);
     position: absolute;
@@ -683,7 +683,7 @@ button[title]:hover::after {
     pointer-events: none;
 }
 
-/* 响应式调整 */
+
 @media (max-width: 768px) {
     .image-format-toolbar {
         flex-wrap: wrap;

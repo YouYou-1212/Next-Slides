@@ -1,12 +1,11 @@
-import { EventBus, EventTypes } from "../../../utils/EventBus";
-import { getCanvasManager } from "../../../utils/CanvasUtils";
-import { COLORS, SIZES } from "../../../constants/theme";
 import * as fabric from "fabric";
-import { SvgControl } from "./SvgControl";
-import { ImageControl } from "./ImageControl";
-import { ControlProxy } from "../ControlProxy";
+import { CustomText } from "./CustomText";
+import { ImageControl } from "../../composables/subassembly/controls/ImageControl";
+import { SvgControl } from "../../composables/subassembly/controls/SvgControl";
+import { COLORS, SIZES } from "../../constants/theme";
+import { GroupControl } from "../../composables/subassembly/controls/GroupControl";
 
-export class PictureControl extends fabric.Group {
+export class TestGroup extends fabric.Group {
     static type = "PictureControl";
     private _innerControl: SvgControl | ImageControl | null = null;
     private _fillColor: string | null = null;
@@ -22,27 +21,28 @@ export class PictureControl extends fabric.Group {
             bottomRight: 0,
             bottomLeft: 0
         };
-    private controlProxy: ControlProxy;
 
-    
-    static async create(url: string, options: any = {}): Promise<PictureControl> {
+    static async create(url: string, options: any = {}): Promise<TestGroup> {
         try {
             
-            const isSvg = PictureControl.isSvgUrl(url, options.type);
+            const isSvg = TestGroup.isSvgUrl(url);
+            
 
             
             let innerControl: SvgControl | ImageControl;
             if (isSvg) {
                 innerControl = await SvgControl.create(url, {
+                    left: 0,
+                    top: 0,
                     originX: 'center',
                     originY: 'center',
-                    scaleX: options.scaleX || 1,
-                    scaleY: options.scaleY || 1,
-                    angle: options.angle || 0,
                     ...options
                 }) as SvgControl;
             } else {
+                
                 innerControl = await ImageControl.create(url, {
+                    left: 0,
+                    top: 0,
                     originX: 'center',
                     originY: 'center',
                     ...options
@@ -50,58 +50,80 @@ export class PictureControl extends fabric.Group {
             }
 
             
-            const pictureControl = new PictureControl([innerControl as fabric.FabricObject], {
+            
+            const testGroup = new TestGroup([innerControl as fabric.FabricObject], {
                 originX: 'center',
                 originY: 'center',
+                left: options.left || 300,
+                top: options.top || 300,
+                width: options.width || 300,
+                height: options.height || 300,
                 scaleX: options.scaleX || 1,
                 scaleY: options.scaleY || 1,
                 angle: options.angle || 0,
                 _innerControl: innerControl,
                 ...options
             });
-
             
-            if (options.fillColor !== undefined) {
-                pictureControl._fillColor = options.fillColor;
-                innerControl.setFillColor(options.fillColor, options.fillOpacity);
-            }
-
             
-            if (options.cornerRadius) {
-                pictureControl._cornerRadius = {
-                    ...pictureControl._cornerRadius,
-                    ...options.cornerRadius
-                };
-                if ('setCornerRadii' in innerControl) {
-                    (innerControl as ImageControl).setCornerRadii(options.cornerRadius);
-                }
-            } else if (options.rx !== undefined) {
-                const radius = options.rx;
-                pictureControl._cornerRadius = {
-                    topLeft: radius,
-                    topRight: radius,
-                    bottomRight: radius,
-                    bottomLeft: radius
-                };
-                if ('setCornerRadius' in innerControl) {
-                    (innerControl as ImageControl).setCornerRadius(radius);
-                }
-            }
-            return pictureControl;
+            return testGroup;
         } catch (error) {
             console.error('创建图片控件失败:', error);
             throw error;
         }
     }
 
+    static isSvgUrl(url: string): boolean {
+        
+        if (url.toLowerCase().endsWith('.svg')) {
+            return true;
+        }
+
+        
+        if (url.startsWith('data:image/svg+xml')) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 判断当前内部控件是否为SVG组件
+     * @returns boolean
+     */
+    isSvg(): boolean {
+        if (!this._innerControl) {
+            return false;
+        }
+
+        return this._innerControl.type === SvgControl.type;
+    }
+
 
     constructor(objects: fabric.FabricObject[], options: any = {}) {
-        super(objects, options);
-        this.controlProxy = new ControlProxy(this);
-        Object.assign(this, {
-            subTargetCheck: false,
-            interactive: false,
-        });
+        const defaultOptions = {
+            cornerSize: SIZES.CORNER_SIZE,
+            cornerColor: COLORS.PRIMARY,
+            cornerStyle: "circle",
+            transparentCorners: false,
+            hasRotatingPoint: false,
+            padding: 0,
+            borderColor: COLORS.PRIMARY,
+            lockRotation: true,
+            lockScalingX: false,
+            lockScalingY: false,
+            lockUniScaling: false,
+            
+            hasBorders: true,
+            hasControls: true,
+            selectable: true,
+            originX: 'center',
+            originY: 'center',
+            ...options,
+        };
+
+        super(objects, defaultOptions);
+
         
         if (options._innerControl) {
             this._innerControl = options._innerControl;
@@ -132,87 +154,34 @@ export class PictureControl extends fabric.Group {
                 bottomLeft: radius
             };
         }
-
-        
-        Object.defineProperty(this, 'type', {
-            value: PictureControl.type,
-            configurable: false,
-            writable: false
-        });
-
-        
-        
-        
-    }
-
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-
-    
-    static isSvgUrl(url: string, type?: string): boolean {
-        if (type && type === 'image/svg+xml') {
-            return true;
-        }
-        if (url.toLowerCase().endsWith('.svg')) {
-            return true;
-        }
-
-        
-        if (url.startsWith('data:image/svg+xml')) {
-            return true;
-        }
-
-        return false;
-    }
-
-    
-    isSvg(): boolean {
-        if (!this._innerControl) {
-            return false;
-        }
-
-        return this._innerControl.type === SvgControl.type;
     }
 
 
-    
-    
-    
 
     
-    
-    
-    
+    _render(ctx: CanvasRenderingContext2D): void {
+        super._render(ctx);
 
-    
-    
-    
+        
+        const hasCorners = Object.values(this._cornerRadius).some(value => value > 0);
+        if (hasCorners && this.canvas && this.canvas.getActiveObject() === this) {
+            ctx.save();
 
-    
-    
-    
+            
+            ctx.strokeStyle = this.borderColor as string;
+            ctx.lineWidth = this.borderScaleFactor || 1;
 
-    
-    
-    
+            
+            const width = this.width || 0;
+            const height = this.height || 0;
 
-    
-    
-    
+            
+            this._renderRoundedRectWithDifferentCorners(ctx, -width / 2, -height / 2, width, height);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+    }
 
     
     private _renderRoundedRectWithDifferentCorners(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number): void {
@@ -268,99 +237,7 @@ export class PictureControl extends fabric.Group {
     }
 
     
-    async replacePicture(newUrl: string): Promise<this> {
-        try {
-            const isSvg = PictureControl.isSvgUrl(newUrl);
-            const currentIsSvg = this._innerControl?.type === SvgControl.type;
-
-            const left = this.left;
-            const top = this.top;
-            const scaleX = this.scaleX;
-            const scaleY = this.scaleY;
-            const angle = this.angle;
-            const width = this.width;
-            const height = this.height;
-            
-            if (isSvg === currentIsSvg && this._innerControl) {
-                if (isSvg) {
-                    await (this._innerControl as SvgControl).replaceSVG(newUrl);
-                } else {
-                    await (this._innerControl as ImageControl).replaceImage(newUrl);
-                }
-                this.set({
-                    left,
-                    top,
-                    scaleX,
-                    scaleY,
-                    angle
-                });
-                this.dirty = true;
-                
-                this.setCoords();
-                if (this.canvas) {
-                    this.canvas.requestRenderAll();
-                }
-                return this;
-            }
-            
-            else {
-                const options = {
-                    originX: 'center',
-                    originY: 'center',
-                    
-                    
-                    
-                    scaleX: 1,
-                    scaleY: 1,
-                };
-
-                this._fillColor = null;
-                
-                let newInnerControl: SvgControl | ImageControl;
-                if (isSvg) {
-                    this._fillOpacity = 1;
-                    newInnerControl = await SvgControl.create(newUrl, options) as SvgControl;
-                } else {
-                    this._fillOpacity = 0.3;
-                    const zoom = this.canvas!.getZoom();
-                    options.scaleX = PictureControl.isSvgUrl(newUrl) ? 1 : 0.5 / zoom,
-                        options.scaleY = PictureControl.isSvgUrl(newUrl) ? 1 : 0.5 / zoom,
-                        newInnerControl = await ImageControl.create(newUrl, options) as ImageControl;
-                }
-                if (this._innerControl) {
-                    this.remove(this._innerControl);
-                }
-                this.add(newInnerControl);
-                this._innerControl = newInnerControl;
-                this.set({
-                    left,
-                    top,
-                    scaleX,
-                    scaleY,
-                    angle
-                });
-                this.setCoords();
-                if (this.canvas) {
-                    this.canvas.requestRenderAll();
-                }
-
-                
-                EventBus.emit(EventTypes.CONTROL_PANEL.UPDATE_IMAGE_SETTING_TOOLBAR, {
-                    target: this,
-                    canvas: this.canvas,
-                    canvasManager: getCanvasManager()
-                });
-                return this;
-            }
-        } catch (error) {
-            console.error('替换图片资源失败:', error);
-            throw error;
-        }
-    }
-
-    
     setFillColor(color: string | null, opacity?: number): this {
-        
         this._fillColor = color;
 
         if (opacity !== undefined) {
@@ -443,7 +320,11 @@ export class PictureControl extends fabric.Group {
         return this._innerControl;
     }
 
-    
+
+    /**
+ * 应用滤镜
+ * @param filterType 滤镜类型
+ */
     applyFilter(filterType: string): void {
         if (this.isSvg() || !this._innerControl) {
             return;
@@ -485,7 +366,10 @@ export class PictureControl extends fabric.Group {
         }
     }
 
-    
+    /**
+ * 获取当前应用的滤镜类型
+ * @returns string 滤镜类型
+ */
     getAppliedFilterType(): string {
         if (this.isSvg() || !this._innerControl) {
             return 'none';
@@ -518,11 +402,12 @@ export class PictureControl extends fabric.Group {
             ...super.toJSON(),
             _fillColor: this._fillColor,
             _fillOpacity: this._fillOpacity,
-            _cornerRadius: this._cornerRadius,
-            
+            _cornerRadius: this._cornerRadius
         };
     }
+
 }
 
-fabric.classRegistry.setClass(PictureControl, PictureControl.type);
-fabric.classRegistry.setSVGClass(PictureControl, PictureControl.type);
+
+fabric.classRegistry.setClass(GroupControl, GroupControl.type);
+fabric.classRegistry.setSVGClass(GroupControl, GroupControl.type);

@@ -7,11 +7,7 @@ export class LayerHandlers {
     this.context = context;
   }
 
-  /**
-   * 处理移动图层
-   * @param params 处理器参数
-   * @param direction 移动方向
-   */
+  
   public handleMoveLayer(
     params: HandlerParams,
     direction: "up" | "down" | "top" | "bottom"
@@ -20,18 +16,14 @@ export class LayerHandlers {
     this.moveActiveObject(direction, params.target);
   }
 
-  /**
-   * 处理移动指定对象图层
-   * @param params 处理器参数
-   * @param direction 移动方向
-   */
+  
   private moveActiveObject(
     direction: "up" | "down" | "top" | "bottom",
     target: any
   ) {
     const activeObject = target;
     if (!activeObject) return;
-    // 计算新的索引位置
+    
     switch (direction) {
       case "up":
         this.context.canvas.bringObjectForward(activeObject, false);

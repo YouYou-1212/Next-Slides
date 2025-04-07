@@ -68,34 +68,34 @@ const isExpanded = ref(true);
 const zoomPercentage = ref(100);
 const isPanMode = ref(false);
 
-// 处理手形工具按钮点击
+
 const handleHandTool = () => {
   if (!props.canvasManager) return;
 
-  // 切换拖动模式
+  
   if (isPanMode.value) {
-    // 如果当前是拖动模式，则切换回默认模式
+    
     props.canvasManager.setDragMode('default');
     isPanMode.value = false;
   } else {
-    // 如果当前不是拖动模式，则切换到拖动模式
+    
     props.canvasManager.setDragMode('pan');
     isPanMode.value = true;
   }
   emit('hand-tool');
 };
 
-// 处理上一页按钮点击
+
 const handlePrevious = () => {
   emit('previous');
 };
 
-// 处理下一页按钮点击
+
 const handleNext = () => {
   emit('next');
 };
 
-// 处理主页按钮点击
+
 const handleHome = () => {
   if (!props.canvasManager) return;
 
@@ -107,17 +107,17 @@ const handleHome = () => {
     }, 200);
   }
 
-  // 获取 PageFrame 并导航到它
+  
   const pageFrame = props.canvasManager.getPageFrame();
   if (pageFrame) {
     props.canvasManager.navigateToFrame(pageFrame);
     handleZoomChange();
   }
-  //发送home事件给父组件，当前父组件暂时不处理
+  
   emit('home');
 };
 
-// 处理缩小按钮点击
+
 const handleZoomOut = () => {
   if (!props.canvasManager) return;
 
@@ -128,7 +128,7 @@ const handleZoomOut = () => {
   emit('zoom-out', zoomPercentage.value);
 };
 
-// 处理放大按钮点击
+
 const handleZoomIn = () => {
   if (!props.canvasManager) return;
 
@@ -139,7 +139,7 @@ const handleZoomIn = () => {
   emit('zoom-in', zoomPercentage.value);
 };
 
-// 提供设置缩放百分比的方法
+
 const setZoomPercentage = (percentage: number) => {
   zoomPercentage.value = percentage;
 };
@@ -147,17 +147,17 @@ const setZoomPercentage = (percentage: number) => {
 const handleZoomChange = () => {
   if (props.canvasManager) {
     const currentZoom = props.canvasManager.getZoom();
-    console.log('currentZoom ', currentZoom);
+    
     if (currentZoom) {
       setZoomPercentage(Math.round(currentZoom * 100));
     }
   }
 };
 
-// 监听 canvasManager 的变化，同步拖动模式状态
+
 watch(() => props.canvasManager, (newManager) => {
   if (newManager) {
-    // 同步当前拖动模式状态
+    
     isPanMode.value = newManager.getDragMode() === 'pan';
   }
 }, { immediate: true });
@@ -167,13 +167,13 @@ onMounted(() => {
   EventBus.on(EventTypes.CANVAS.ZOOM_CHANGE, handleZoomChange);
 });
 
-// 组件卸载时移除事件监听
+
 onUnmounted(() => {
   EventBus.off(EventTypes.CANVAS.ZOOM_CHANGE, handleZoomChange);
 });
 
 
-// 暴露方法给父组件
+
 defineExpose({
   setZoomPercentage
 });
@@ -249,7 +249,7 @@ defineExpose({
   text-align: center;
 }
 
-/* 响应式调整 */
+
 @media (max-width: 768px) {
   .bottom-control-toolbar {
     bottom: 10px;

@@ -138,7 +138,7 @@ import ColorPicker from './ColorPicker.vue';
 
 const props = defineProps<{
   canvasManager?: any;
-  panelData?: any; // 添加 panelData 属性
+  panelData?: any; 
 }>();
 
 const visible = ref(false);
@@ -146,25 +146,25 @@ const targetObject = ref<fabric.Object | null>(null);
 const position = ref({ top: 0, left: 0 });
 const showColorPicker = ref(false);
 const showBgColorPicker = ref(false);
-const showBoxBgColorPicker = ref(false); // 文本框背景色选择器状态
-// 文本样式状态
+const showBoxBgColorPicker = ref(false); 
+
 const isBold = ref(false);
 const isItalic = ref(false);
 const isUnderline = ref(false);
 const fontSize = ref(16);
 const textColor = ref('#000000');
-const textBgColor = ref('transparent'); // 文本背景颜色
-const boxBgColor = ref('transparent'); // 文本框背景颜色
+const textBgColor = ref('transparent'); 
+const boxBgColor = ref('transparent'); 
 const textAlign = ref('left');
 const showAlignMenu = ref(false);
 const fontFamily = ref('Arial');
-const textStyle = ref('normal'); // 文本样式
+const textStyle = ref('normal'); 
 
 const isUnorderedList = ref(false);
 const isOrderedList = ref(false);
 
 
-// 文本样式选项
+
 const textStyles = [
   { label: '普通', value: 'normal' },
   { label: '标题1', value: 'heading1' },
@@ -175,13 +175,13 @@ const textStyles = [
   { label: '代码', value: 'code' },
 ];
 
-// 字体选项
+
 const fontFamilies = ref([
   ...defaultFonts
 ]);
 
 
-// 初始化字体列表
+
 const initFontList = async () => {
   getSystemFonts().then((fonts) => {
     fontFamilies.value = fonts;
@@ -191,7 +191,7 @@ const initFontList = async () => {
   });
 };
 
-// 处理颜色选择
+
 const handleTextColorSelect = (color: string) => {
   setTextColor(color);
   showColorPicker.value = false;
@@ -207,7 +207,7 @@ const handleBoxBgColorSelect = (color: string) => {
   showBoxBgColorPicker.value = false;
 };
 
-// 计算工具栏位置
+
 const toolbarStyle = computed(() => {
   return {
     top: `${position.value.top}px`,
@@ -215,7 +215,7 @@ const toolbarStyle = computed(() => {
   };
 });
 
-// 更新文本样式状态
+
 const updateTextStyleState = () => {
   if (!targetObject.value) return;
 
@@ -225,16 +225,16 @@ const updateTextStyleState = () => {
   isUnderline.value = textObj.underline === true;
   fontSize.value = textObj.fontSize || 16;
   textColor.value = textObj.fill || '#000000';
-  textBgColor.value = textObj.textBackgroundColor || 'transparent'; // 获取文本背景颜色
-  // 获取文本背景颜色
-  boxBgColor.value = textObj.backgroundColor || 'transparent'; // 获取文本框背景颜色
+  textBgColor.value = textObj.textBackgroundColor || 'transparent'; 
+  
+  boxBgColor.value = textObj.backgroundColor || 'transparent'; 
   textAlign.value = textObj.textAlign || 'left';
   fontFamily.value = textObj.fontFamily || 'Arial';
-  // 更新列表状态
+  
   isUnorderedList.value = textObj.listStyle === 'unordered';
   isOrderedList.value = textObj.listStyle === 'ordered';
 
-  // 根据文本属性推断样式
+  
   if (textObj.fontSize >= 40) {
     textStyle.value = 'heading1';
   } else if (textObj.fontSize >= 32) {
@@ -250,7 +250,7 @@ const updateTextStyleState = () => {
 
 
 
-// 切换粗体
+
 const toggleBold = () => {
   if (!targetObject.value) return;
 
@@ -261,7 +261,7 @@ const toggleBold = () => {
   props.canvasManager?.canvas.renderAll();
 };
 
-// 切换斜体
+
 const toggleItalic = () => {
   if (!targetObject.value) return;
 
@@ -272,7 +272,7 @@ const toggleItalic = () => {
   props.canvasManager?.canvas.renderAll();
 };
 
-// 切换下划线
+
 const toggleUnderline = () => {
   if (!targetObject.value) return;
 
@@ -283,7 +283,7 @@ const toggleUnderline = () => {
   props.canvasManager?.canvas.renderAll();
 };
 
-// 增加字体大小
+
 const increaseFontSize = () => {
   if (!targetObject.value) return;
 
@@ -293,7 +293,7 @@ const increaseFontSize = () => {
   fontSize.value = newSize;
 };
 
-// 减小字体大小
+
 const decreaseFontSize = () => {
   if (!targetObject.value) return;
 
@@ -304,32 +304,32 @@ const decreaseFontSize = () => {
 };
 
 
-// 用户输入字体大小后更新
+
 const updateFontSize = () => {
   if (!targetObject.value) return;
 
   const textObj = targetObject.value as any;
-  // 确保字体大小在有效范围内
+  
   const newSize = Math.max(0.5, Math.min(parseInt(fontSize.value.toString()), 1000));
-  fontSize.value = newSize; // 更新显示值
+  fontSize.value = newSize; 
   textObj.setFontSize(newSize, true);
   props.canvasManager?.canvas.renderAll();
 };
 
-// 设置文本颜色时同步更新自定义颜色文本
+
 const setTextColor = (color: string) => {
   if (!targetObject.value) return;
 
   const textObj = targetObject.value as any;
   textObj.set('fill', color);
   textColor.value = color;
-  // customColorText.value = color === 'transparent' ? '' : color;
+  
   showColorPicker.value = false;
   props.canvasManager?.canvas.renderAll();
 };
 
 
-// 设置文本背景颜色
+
 const setTextBgColor = (color: string) => {
   if (!targetObject.value) return;
 
@@ -340,7 +340,7 @@ const setTextBgColor = (color: string) => {
   props.canvasManager?.canvas.renderAll();
 };
 
-// 设置文本框背景颜色
+
 const setBoxBgColor = (color: string) => {
   if (!targetObject.value) return;
 
@@ -348,10 +348,10 @@ const setBoxBgColor = (color: string) => {
   textObj.set('backgroundColor', color);
   boxBgColor.value = color;
   showBoxBgColorPicker.value = false;
-  // props.canvasManager?.canvas.requestRenderAll();
+  
 };
 
-// 设置文本对齐方式
+
 const setTextAlign = (align: string) => {
   if (!targetObject.value) return;
 
@@ -359,11 +359,11 @@ const setTextAlign = (align: string) => {
   textObj.set('textAlign', align);
   textAlign.value = align;
   showAlignMenu.value = false;
-  // props.canvasManager?.canvas.requestRenderAll();
+  
 };
 
 
-// 添加切换列表的方法
+
 const toggleUnorderedList = () => {
   if (!targetObject.value) return;
   const textObj = targetObject.value as any;
@@ -375,7 +375,7 @@ const toggleUnorderedList = () => {
     } else {
       textObj.setListStyle('none');
     }
-    // props.canvasManager?.canvas.renderAll();
+    
   }
 };
 
@@ -395,7 +395,7 @@ const toggleOrderedList = () => {
 };
 
 
-// 更改字体
+
 const changeFontFamily = () => {
   if (!targetObject.value) return;
 
@@ -404,13 +404,13 @@ const changeFontFamily = () => {
   props.canvasManager?.canvas.renderAll();
 };
 
-// 更改文本样式
+
 const changeTextStyle = () => {
   if (!targetObject.value) return;
 
   const textObj = targetObject.value as any;
 
-  // 根据选择的样式应用不同的属性
+  
   switch (textStyle.value) {
     case 'heading1':
       textObj.applyTextStyle({
@@ -479,7 +479,7 @@ const changeTextStyle = () => {
 };
 
 
-// 计算工具栏位置
+
 const calculatePosition = () => {
   if (!targetObject.value || !props.canvasManager?.canvas) return;
 
@@ -491,14 +491,14 @@ const calculatePosition = () => {
 
   if (!vpt) return;
 
-  // 计算对象在视口中的位置
+  
   const objLeft = (objBounds.left * zoom + vpt[4]);
   const objTop = (objBounds.top * zoom + vpt[5]);
   const objWidth = objBounds.width * zoom;
   const objHeight = objBounds.height * zoom;
 
   nextTick(() => {
-    // 获取工具栏元素和屏幕尺寸
+    
     const toolbarEl = document.querySelector('.text-format-toolbar') as HTMLElement;
     const toolbarWidth = toolbarEl ? toolbarEl.offsetWidth : 300;
     const toolbarHeight = toolbarEl ? toolbarEl.offsetHeight : 50;
@@ -506,15 +506,15 @@ const calculatePosition = () => {
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
 
-    // 将工具栏放在对象上方并水平居中
+    
     let left = objLeft + (objWidth / 2) - (toolbarWidth / 2);
     let top = objTop - toolbarHeight - 15;
 
-    // 确保工具栏在屏幕范围内
+    
     left = Math.max(10, Math.min(left, screenWidth - toolbarWidth - 10));
     top = Math.max(10, Math.min(top, screenHeight - toolbarHeight - 10));
 
-    // 设置位置
+    
     position.value = { left, top };
   });
 
@@ -523,7 +523,7 @@ const calculatePosition = () => {
 
 onMounted(() => {
   initFontList();
-  // 点击其他地方关闭颜色选择器
+  
   document.addEventListener('click', (e) => {
     if ((showColorPicker.value || showBgColorPicker.value) &&
       !e.composedPath().some(el => (el as HTMLElement).classList?.contains('color-selector'))) {
@@ -543,7 +543,7 @@ onUnmounted(() => {
   document.removeEventListener('click', () => { });
 
 });
-// 监听 panelData 变化
+
 watch(() => props.panelData, (newData) => {
   if (newData && newData.target) {
     targetObject.value = newData.target;
@@ -561,7 +561,7 @@ watch(() => props.panelData, (newData) => {
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   padding: 8px;
-  /* 增加内边距 */
+  
   z-index: 1000;
   pointer-events: auto;
   display: inline-flex;
@@ -572,7 +572,7 @@ watch(() => props.panelData, (newData) => {
   display: flex;
   align-items: center;
   gap: 6px;
-  /* 增加按钮之间的间距 */
+  
 }
 
 button {
@@ -588,7 +588,7 @@ button {
   padding: 0;
   color: #595959;
   position: relative;
-  /* 添加相对定位 */
+  
 }
 
 button:hover {
@@ -605,10 +605,10 @@ button.active {
 .divider {
   width: 1px;
   height: 24px;
-  /* 增加分隔线高度 */
+  
   background-color: #e8e8e8;
   margin: 0 4px;
-  /* 增加分隔线两侧间距 */
+  
 }
 
 .font-size-control {
@@ -636,7 +636,7 @@ button.active {
   border-right: 1px solid #d9d9d9;
   height: 100%;
   padding: 0;
-  -moz-appearance: textfield; /* 移除Firefox中的上下箭头 */
+  -moz-appearance: textfield; 
 }
 
 .font-size-input::-webkit-outer-spin-button,
@@ -645,16 +645,7 @@ button.active {
   margin: 0;
 }
 
-/* .font-size-control span {
-  min-width: 40px;
-  text-align: center;
-  font-size: 14px;
-  color: #595959;
-  border-left: 1px solid #d9d9d9;
-  border-right: 1px solid #d9d9d9;
-  height: 100%;
-  line-height: 30px;
-} */
+
 
 .font-family-control select {
   height: 24px;
@@ -668,10 +659,7 @@ button.active {
   cursor: pointer;
 }
 
-/* .color-selector {
-  position: relative;
-  height: 32px;
-} */
+
 
 .color-preview {
   width: 14px;
@@ -707,7 +695,7 @@ button.active {
   border-color: #1890ff;
 }
 
-/* 图标样式 */
+
 i.fas {
   font-size: 12px;
   width: 12px;
@@ -717,7 +705,7 @@ i.fas {
   justify-content: center;
 }
 
-/* 文本样式选择器样式 */
+
 .text-style-control {
   min-width: 80px;
 }
@@ -734,10 +722,8 @@ i.fas {
   cursor: pointer;
 }
 
-/* 文本背景颜色预览样式 */
-/* .bg-color-preview {
-  position: relative;
-} */
+
+
 
 .bg-color-preview::before {
   content: 'T';
@@ -750,7 +736,7 @@ i.fas {
   font-weight: bold;
 }
 
-/* 透明色特殊处理 */
+
 .color-option[style*="transparent"] {
   background-image: linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc),
     linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc);
@@ -758,7 +744,7 @@ i.fas {
   background-position: 0 0, 4px 4px;
 }
 
-/* 响应式调整 */
+
 @media (max-width: 768px) {
   .text-format-toolbar {
     flex-wrap: wrap;
@@ -775,7 +761,7 @@ i.fas {
   }
 }
 
-/* 添加工具提示样式 */
+
 button[title]:hover::after {
   content: attr(title);
   position: absolute;
@@ -790,10 +776,10 @@ button[title]:hover::after {
   white-space: nowrap;
   z-index: 1002;
   pointer-events: none;
-  /* 防止工具提示阻挡鼠标事件 */
+  
 }
 
-/* 修复背景色选择器的显示问题 */
+
 .color-selector {
   position: relative;
   height: 32px;
@@ -804,7 +790,7 @@ button[title]:hover::after {
   z-index: 20;
 }
 
-/* 确保下拉菜单不会被截断 */
+
 .font-family-control,
 .text-style-control {
   position: relative;
@@ -816,7 +802,7 @@ button[title]:hover::after {
   z-index: 20;
 }
 
-/* 添加文本背景色选择器的特殊样式 */
+
 .bg-color-preview {
   background-image: linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc),
     linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc);
@@ -837,7 +823,7 @@ button[title]:hover::after {
   border-radius: 2px;
 }
 
-/* 添加文本框背景色选择器的特殊样式 */
+
 .box-bg-color-preview {
   background-image: linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc),
     linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc);
@@ -899,7 +885,7 @@ button[title]:hover::after {
 
 
 .align-menu button {
-  /* width: 100%; */
+  
   justify-content: flex-start;
   padding-left: 8px;
 }

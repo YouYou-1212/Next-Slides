@@ -50,7 +50,7 @@ import type { CanvasManager } from "../../composables/canvas/CanvasManager";
 import { EventBus, EventTypes } from "../../utils/EventBus";
 import { useRouter } from "vue-router";
 
-const router = useRouter(); // 使用 useRouter 获取路由实例
+const router = useRouter(); 
 
 const props = defineProps<{ canvasManager: CanvasManager | null }>();
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -71,12 +71,12 @@ const handleExport = () => {
   }
 };
 
-// 触发导入文件选择
+
 const triggerImportFile = () => {
   jsonFileInput.value?.click();
 };
 
-// 处理JSON导入
+
 const handleJsonImport = (event: Event) => {
   const input = event.target as HTMLInputElement;
   if (input.files && input.files[0]) {
@@ -88,7 +88,7 @@ const handleJsonImport = (event: Event) => {
       if (jsonContent && props.canvasManager) {
         props.canvasManager.importCanvasFromJSON(jsonContent);
       }
-      // 清空选择，以便可以重复选择同一文件
+      
       input.value = "";
     };
 
@@ -96,23 +96,23 @@ const handleJsonImport = (event: Event) => {
   }
 };
 
-// 打开测试页面
+
 const openTestPage = () => {
-  // window.open('/test', '_blank');
+  
   router.push('/test');
 };
 
-// 获取所有帧
+
 const getAllFrames = () => {
   if (!props.canvasManager) return;
 
-  // 获取PageFrame
+  
   const pageFrame = props.canvasManager.getPageFrame();
 
-  // 获取所有Frame
+  
   const frames = props.canvasManager.getAllFrames();
 
-  // 合并列表，确保PageFrame在第一位
+  
   const allFrames = [];
   if (pageFrame) {
     allFrames.push(pageFrame);
@@ -125,7 +125,7 @@ const getAllFrames = () => {
 };
 
 
-// 切换帧列表显示状态
+
 const toggleFrameList = () => {
   showFrameList.value = !showFrameList.value;
   if (showFrameList.value) {
@@ -134,7 +134,7 @@ const toggleFrameList = () => {
 };
 
 
-// 导航到选中的帧
+
 const navigateToFrame = (frame: any) => {
   if (!props.canvasManager) return;
   props.canvasManager.navigateToFrame(frame);
@@ -142,14 +142,14 @@ const navigateToFrame = (frame: any) => {
 };
 
 
-// 监听画布变化，更新帧列表
+
 watch(() => props.canvasManager, (newVal) => {
   if (newVal) {
     getAllFrames();
   }
 }, { immediate: true });
 
-// 组件挂载时获取帧列表
+
 onMounted(() => {
   if (props.canvasManager) {
     getAllFrames();
@@ -186,19 +186,19 @@ const shapes = [
 ];
 
 const addShape = (type: string, options: any) => {
-  console.log("addShape", props.canvasManager?.getControlsManager());
+  
   props.canvasManager?.getControlsManager()?.addShape(type, options);
   showShapeDropdown.value = false;
 };
 
-// 处理图片选择
+
 const handleImageSelect = (event: Event) => {
   const input = event.target as HTMLInputElement;
   if (input.files && input.files[0]) {
     const file = input.files[0];
     const url = URL.createObjectURL(file);
     props.canvasManager?.getControlsManager()?.addImage(url);
-    // 清空选择，以便可以重复选择同一文件
+    
     input.value = "";
   }
 };
@@ -215,7 +215,7 @@ const tools = ref([
     id: 3,
     name: "媒体",
     action: () => {
-      // fileInput.value?.click();
+      
       EventBus.emit(EventTypes.CONTROL_PANEL.OPEN, {
         type: EventTypes.PANEL_TYPE.INSERT_IMAGE,
         canvas: props.canvasManager?.getMainCanvas(),
@@ -332,7 +332,7 @@ const tools = ref([
   position: relative;
 }
 
-/***************************************/
+
 .shape-dropdown,
 .frame-dropdown {
   position: absolute;
@@ -366,9 +366,9 @@ const tools = ref([
 .frame-dropdown {
   top: 100%;
   right: 0;
-  /* 修改为右对齐，而不是左对齐 */
+  
   margin-top: 4px;
   position: absolute;
-  /* 确保绝对定位 */
+  
 }
 </style>

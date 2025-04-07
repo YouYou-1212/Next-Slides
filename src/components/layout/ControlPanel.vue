@@ -43,7 +43,7 @@ const canvasData = ref<any>({
   position: null
 });
 
-// 监听 panelData 变化
+
 watch(() => props.panelData, (newData) => {
   if (newData) {
     panelType.value = newData.type;
@@ -55,7 +55,7 @@ watch(() => props.panelData, (newData) => {
       canvasManager: newData.canvasManager
     };
 
-    // 根据类型加载不同组件
+    
     if (newData.type === EventTypes.PANEL_TYPE.BACKGROUND_IMAGE) {
       currentComponent.value = BackgroundImageSelector;
     } else if (newData.type === EventTypes.PANEL_TYPE.BACKGROUND_COLOR) {
@@ -67,12 +67,12 @@ watch(() => props.panelData, (newData) => {
 }, { immediate: true });
 
 
-// 添加关闭面板方法 - 通过修改折叠状态来隐藏面板
+
 const closePanel = () => {
   emit('update:collapsed', true);
 };
 
-// 根据面板类型计算标题
+
 const panelTitle = computed(() => {
   switch (panelType.value) {
     case EventTypes.PANEL_TYPE.BACKGROUND_IMAGE:
@@ -121,7 +121,7 @@ const panelTitle = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* 修改为两端对齐 */
+  
   border-bottom: 1px solid #e8e8e8;
   background-color: #fff;
 }
@@ -133,7 +133,7 @@ const panelTitle = computed(() => {
   background-color: #fff;
 }
 
-/* 添加关闭按钮样式 */
+
 .close-button {
   background: none;
   border: none;

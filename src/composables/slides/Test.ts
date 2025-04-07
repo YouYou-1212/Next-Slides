@@ -7,7 +7,7 @@ export interface SerializedPathPlusProps extends SerializedPathProps {
 }
 
 export class PathPlus extends fabric.Rect {
-  static type: 'path' // if you want it to override Path completely
+  static type: 'path' 
   declare id?: string;
   declare name?: string;
 
@@ -19,7 +19,7 @@ export class PathPlus extends fabric.Rect {
   } as SerializedPathPlusProps;
  }
 
-// 添加 toObject 方法以支持克隆自定义属性
+
 toObject(propertiesToInclude: any[] = []): any{
   return super.toObject([...propertiesToInclude, 'id', 'name']);
 }
@@ -27,7 +27,7 @@ toObject(propertiesToInclude: any[] = []): any{
 
 }
 
-// to make possible restoring from serialization
+
 classRegistry.setClass(PathPlus, 'path');
-// to make PathPlus connected to svg Path element
+
 classRegistry.setSVGClass(PathPlus, 'path');

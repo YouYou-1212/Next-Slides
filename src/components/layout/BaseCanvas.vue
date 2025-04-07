@@ -26,12 +26,12 @@ onMounted(async () => {
       canvasRef.value.parentElement
     );
     
-    // 等待 canvasManager 初始化完成
+    
     await nextTick();
     
-    // 通知父组件 canvas 已准备就绪
+    
     emit('canvas-ready');
-    console.log('Canvas 已准备就绪，canvasManager 已初始化');
+    
   } else {
     console.warn('Canvas 元素未完全挂载，无法初始化 canvasManager');
   }
@@ -42,7 +42,7 @@ onUnmounted(() => {
   canvasManager = null;
 });
 
-// 暴露给父组件的属性和方法
+
 defineExpose({
   canvasManager: computed(() => canvasManager),
 });
@@ -55,7 +55,7 @@ defineExpose({
   height: 100%;
   position: relative;
   overflow: hidden;
-  /***/background-image: radial-gradient(circle, #0c0c0c 0px, #ffffff00 1px);
+  background-image: radial-gradient(circle, #0c0c0c 0px, #ffffff00 1px);
   background-size: 18px 18px;
 }
 
@@ -66,7 +66,7 @@ canvas {
 }
 
 .presentation-canvas {
-  display: none; /* 初始状态隐藏 */
+  display: none; 
 }
 
 :deep(.canvas-container .highlight-border) {

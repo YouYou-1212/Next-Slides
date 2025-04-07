@@ -1,4 +1,4 @@
-// 主题相关常量配置
+
 
 export const PAGE_SIZE = {
   FRAME: {
@@ -11,11 +11,11 @@ export const PAGE_SIZE = {
   },
 };
 
-// 样式配置
+
 export const SLIDE_STYLES = {
   COMMON: {
     FILL: "transparent",
-    // STROKE: "rgba(0,0,0)",
+    
     SHADOW: {
       COLOR: "#747C87",
       OFFSET_Y: 4,
@@ -24,7 +24,7 @@ export const SLIDE_STYLES = {
   },
 };
 
-// 尺寸限制
+
 export const LIMITS = {
   PAGE: {
     MIN_WIDTH: 400,
@@ -34,38 +34,39 @@ export const LIMITS = {
   },
 };
 
-// 性能相关
+
 export const PERFORMANCE = {
-  UPDATE_INTERVAL: 32, // 32ms (约30fps)
+  UPDATE_INTERVAL: 32, 
 };
 
-// 颜色配置
+
 export const COLORS = {
-  // 主色调
+  
   PRIMARY: "#3564FF",
   TRANSPARENT: "transparent",
-
-  // 文本颜色
+  
+  
   TEXT: "#333333",
 
-  // 边框颜色
+  
   BORDER: {
     DEFAULT: "transparent",
     HOVER: "#3564FF",
     SLIDES_HOVER: "#2ecc71",
     SLIDES_SELECTED: "#2ecc71",
+    SLIDES_DEFAULT: "#111111",
     SELECTED: "#3564FF",
-    UNSELECTED: "#747C87",  // 添加未选中状态的颜色
+    UNSELECTED: "#747C87",  
   },
 
-  // 背景颜色
+  
   BACKGROUND: {
     DEFAULT: "#ffffff",
     HOVER: "#f0f0f0",
   },
 };
 
-// 尺寸配置
+
 export const SIZES = {
   PADDING_0: 0,
   PADDING_5: 5,
@@ -77,11 +78,12 @@ export const SIZES = {
   MAX_ZOOM: 100,
 };
 
-// 样式配置
+
 export const STYLES = {
   CORNER: {
     STYLE: "circle" as "rect" | "circle",
-    COLOR: COLORS.PRIMARY,
+    SLIDES_DEFAULT_COLOR: COLORS.BORDER.SLIDES_DEFAULT,
+    COLOR: COLORS.BORDER.SELECTED,
     SLIDES_COLOR: COLORS.BORDER.SLIDES_SELECTED,
     SIZE: SIZES.CORNER_SIZE,
     TRANSPARENT: false,

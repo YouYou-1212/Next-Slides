@@ -8,6 +8,9 @@ import type { Position } from "./handles/types";
 import type { CanvasManager } from "../canvas/CanvasManager";
 import { TextControl } from "../subassembly/controls/TextControl";
 import { CustomCanvas } from "../canvas/CustomCanvas";
+import { ActiveSelection } from "fabric";
+import { GroupControl } from "../subassembly/controls/GroupControl";
+import { PictureControl } from "../subassembly/controls/PictureControl";
 
 export class ContextMenuManager {
   private canvas: fabric.Canvas;
@@ -15,7 +18,7 @@ export class ContextMenuManager {
   private menuItems: Map<string, MenuItemConfig[]>;
   private handlerManager: HandlerManager;
   private canvasManager: CanvasManager;
-  // 存储最后的事件对象
+  
   private lastEvent: MouseEvent | null = null;
 
   constructor(canvas: CustomCanvas, canvasManager: CanvasManager) {
@@ -31,10 +34,7 @@ export class ContextMenuManager {
     this.initializeEventListeners();
   }
 
-  /**
-   * 创建菜单DOM元素
-   * @returns 菜单DOM元素
-   */
+  
   private createMenuElement(): HTMLDivElement {
     const menu = document.createElement("div");
     menu.style.position = "fixed";
@@ -48,10 +48,7 @@ export class ContextMenuManager {
     return menu;
   }
 
-  /**
-   * 初始化菜单项
-   * @returns 菜单项配置映射
-   */
+  
   private initializeMenuItems(): Map<string, MenuItemConfig[]> {
     const callbacks: MenuCallbacks = {
       insertFrame: () => this.insertFrame(),
@@ -59,6 +56,8 @@ export class ContextMenuManager {
       changeColorScheme: () => this.changeColorScheme(),
       insertText: () => this.insertText(),
       insertImage: () => this.insertImage(),
+      createGroup: () => this.createGroup(),
+      cancelGroup: () => this.cancelGroup(),
       paste: () => this.paste(),
       copyObject: () => this.copyObject(),
       cutObject: () => this.cutObject(),
@@ -71,13 +70,9 @@ export class ContextMenuManager {
     return MenuItems.getAllMenuItems(callbacks);
   }
 
-  /**
-   * 创建单个菜单项
-   * @param item 菜单项配置
-   * @returns 菜单项DOM元素
-   */
+  
   private createMenuItem(item: MenuItemConfig): HTMLDivElement {
-    // 如果是分隔线
+    
     if (item.separator) {
       const separator = document.createElement("div");
       separator.style.height = "1px";
@@ -96,7 +91,7 @@ export class ContextMenuManager {
     menuItem.style.display = "flex";
     menuItem.style.alignItems = "center";
 
-    // 如果有图标
+    
     if (item.icon) {
       const icon = document.createElement("span");
       icon.innerHTML = item.icon;
@@ -117,13 +112,11 @@ export class ContextMenuManager {
     return menuItem;
   }
 
-  /**
-   * 初始化事件监听器
-   */
+  
   private initializeEventListeners() {
-    // console.log("initializeEventListeners");
+    
     const canvasElement = this.canvas.upperCanvasEl;
-    // 阻止默认右键菜单
+    
     canvasElement.addEventListener(
       "contextmenu",
       (e) => {
@@ -132,15 +125,15 @@ export class ContextMenuManager {
       },
       false
     );
-    // 监听右键点击事件
+    
     canvasElement.addEventListener("mousedown", this.handleMouseDown);
 
-    // 点击其他区域关闭菜单
+    
     document.addEventListener("click", () => {
       this.hideContextMenu();
     });
 
-    // ESC键关闭菜单
+    
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         this.hideContextMenu();
@@ -148,69 +141,73 @@ export class ContextMenuManager {
     });
   }
 
-  /**
-   * 处理鼠标按下事件
-   */
+  
   private handleMouseDown = (e: MouseEvent) => {
     if (e.button === 2) {
-      this.lastEvent = e; // 保存事件对象
-      // 右键点击
+      this.lastEvent = e; 
+      
       e.preventDefault();
 
-      // 获取点击位置的对象
-      let target:any = this.canvas.findTarget(e);
-      if(!target){
+      
+      let target: any = this.canvas.findTarget(e);
+      if (!target) {
         target = this.canvas;
       }
       if (target) {
-        // 选中右键点击的对象
-        if(!(target instanceof CustomCanvas))this.canvas.setActiveObject(target);
-        // this.canvas.requestRenderAll();
+        
+        if (!(target instanceof CustomCanvas)) this.canvas.setActiveObject(target);
+        
 
-        // 显示右键菜单
+        
         this.showContextMenu(e, target);
       } else {
-        // 点击了画布空白区域
+        
         this.showCanvasContextMenu(e);
       }
     }
   };
 
-  /**
-   * 显示画布空白区域的右键菜单
-   * @param e 鼠标事件
-   */
+  
   private showCanvasContextMenu(e: MouseEvent) {
     const menuItems = this.menuItems.get("canvas") || [];
     this.renderContextMenu(e, menuItems);
   }
 
-  /**
-   * 显示对象的右键菜单
-   * @param e 鼠标事件
-   * @param target 目标对象
-   */
+  
   private showContextMenu(e: MouseEvent, target: fabric.Object) {
     let menuType: string;
 
-    if (target instanceof PageFrame) {
-      menuType = PageFrame.type;
-    } else if (target instanceof Frame) {
-      menuType = Frame.type;
-    } else if (target instanceof CustomCanvas) {
-      menuType = CustomCanvas.type;
-    } else {
-      menuType = TextControl.type;
+    switch (true) {
+      case target instanceof PageFrame:
+        menuType = PageFrame.type;
+        break;
+      case target instanceof Frame:
+        menuType = Frame.type;
+        break;
+      
+      
+      
+      case target instanceof TextControl:
+        menuType = TextControl.type;
+        break;
+      case target instanceof PictureControl:
+        menuType = PictureControl.type;
+        break;
+      case target instanceof ActiveSelection:
+        menuType = ActiveSelection.type;
+        break;
+      case target instanceof GroupControl:
+        menuType = GroupControl.type;
+        break;
+      default:
+        menuType = CustomCanvas.type;
+        break;
     }
     const menuItems = this.menuItems.get(menuType) || [];
     this.renderContextMenu(e, menuItems);
   }
 
-  /**
-   * 渲染上下文菜单
-   * @param e 鼠标事件
-   * @param menuItems 菜单项配置
-   */
+  
   private renderContextMenu(e: MouseEvent, menuItems: MenuItemConfig[]) {
     this.menuElement.innerHTML = "";
 
@@ -218,7 +215,7 @@ export class ContextMenuManager {
       this.menuElement.appendChild(this.createMenuItem(item));
     });
 
-    // 定位菜单
+    
     const x = e.clientX;
     const y = e.clientY;
 
@@ -226,7 +223,7 @@ export class ContextMenuManager {
     this.menuElement.style.top = `${y}px`;
     this.menuElement.style.display = "block";
 
-    // 确保菜单不超出视窗
+    
     const rect = this.menuElement.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -240,41 +237,33 @@ export class ContextMenuManager {
     }
   }
 
-  /**
-   * 隐藏上下文菜单
-   */
+  
   private hideContextMenu() {
     this.menuElement.style.display = "none";
   }
 
-  // /**
-  //  * 查找对象所属的Frame
-  //  * @param object 目标对象
-  //  * @returns 父Frame对象或null
-  //  */
-  // private findParentFrame(object: fabric.Object): Frame | null {
-  //   return (
-  //     (this.canvas
-  //       .getObjects()
-  //       .filter((obj) => obj instanceof Frame)
-  //       .find((frame) => (frame as Frame).contents.has(object)) as Frame) ||
-  //     null
-  //   );
-  // }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
-  /**
-   * 获取当前鼠标位置
-   * @returns 位置对象
-   */
+  
   private getCurrentPosition(): Position | undefined {
     if (!this.lastEvent) return undefined;
     return this.canvas.getPointer(this.lastEvent);
   }
 
-  /**
-   * 移动当前选中的对象
-   * @param direction 移动方向
-   */
+  
   private moveActiveObject(direction: "up" | "down" | "top" | "bottom") {
     const activeObject = this.canvas.getActiveObject();
     if (!activeObject) return;
@@ -290,10 +279,8 @@ export class ContextMenuManager {
     this.hideContextMenu();
   }
 
-  // 以下是菜单项对应的操作方法
-  /**
-   * 插入新Frame
-   */
+  
+  
   private insertFrame() {
     const position = this.getCurrentPosition();
     if (!position) return;
@@ -308,9 +295,7 @@ export class ContextMenuManager {
     this.hideContextMenu();
   }
 
-  /**
-   * 更换背景
-   */
+  
   private changeBackground() {
     const params = {
       canvas: this.canvas,
@@ -322,9 +307,7 @@ export class ContextMenuManager {
     this.hideContextMenu();
   }
 
-  /**
-   * 更换配色
-   */
+  
   private changeColorScheme() {
     const params = {
       canvas: this.canvas,
@@ -336,9 +319,7 @@ export class ContextMenuManager {
     this.hideContextMenu();
   }
 
-  /**
-   * 插入文本
-   */
+  
   private insertText() {
     const position = this.getCurrentPosition();
     if (!position) return;
@@ -353,9 +334,7 @@ export class ContextMenuManager {
     this.hideContextMenu();
   }
 
-  /**
-   * 插入图片
-   */
+  
   private insertImage() {
     const params = {
       canvas: this.canvas,
@@ -367,7 +346,7 @@ export class ContextMenuManager {
     this.hideContextMenu();
   }
 
-  private insertShape(){
+  private insertShape() {
     const params = {
       canvas: this.canvas,
       target: this.canvas.getActiveObject(),
@@ -378,9 +357,32 @@ export class ContextMenuManager {
     this.hideContextMenu();
   }
 
-  /**
-   * 粘贴操作
-   */
+
+  
+  private createGroup() {
+    const params = {
+      canvas: this.canvas,
+      target: this.canvas.getActiveObject(),
+      position: this.getCurrentPosition(),
+    };
+
+    this.handlerManager.content.handleCreateGroup(params);
+    this.hideContextMenu();
+  }
+
+  
+  private cancelGroup() {
+    const params = {
+      canvas: this.canvas,
+      target: this.canvas.getActiveObject(),
+      position: this.getCurrentPosition(),
+    };
+
+    this.handlerManager.content.handleCancelGroup(params);
+    this.hideContextMenu();
+  }
+
+  
   private paste() {
     const position = this.getCurrentPosition();
     if (!position) return;
@@ -395,9 +397,7 @@ export class ContextMenuManager {
     this.hideContextMenu();
   }
 
-  /**
-   * 复制对象
-   */
+  
   private copyObject() {
     const activeObject = this.canvas.getActiveObject();
     if (!activeObject) return;
@@ -412,9 +412,7 @@ export class ContextMenuManager {
     this.hideContextMenu();
   }
 
-  /**
-   * 剪切对象
-   */
+  
   private cutObject() {
     const activeObject = this.canvas.getActiveObject();
     if (!activeObject) return;
@@ -429,9 +427,7 @@ export class ContextMenuManager {
     this.hideContextMenu();
   }
 
-  /**
-   * 删除对象
-   */
+  
   private deleteObject() {
     const activeObject = this.canvas.getActiveObject();
     if (!activeObject) return;
@@ -451,9 +447,7 @@ export class ContextMenuManager {
     this.hideContextMenu();
   }
 
-  /**
-   * 开始演示
-   */
+  
   private startPresentation() {
     const params = {
       canvas: this.canvas,
@@ -465,17 +459,15 @@ export class ContextMenuManager {
     this.hideContextMenu();
   }
 
-  /**
-   * 销毁上下文菜单管理器
-   */
+  
   public destroy() {
-    // 移除事件监听
+    
     const canvasElement = this.canvas.upperCanvasEl;
     canvasElement.removeEventListener("contextmenu", (e) => e.preventDefault());
     canvasElement.removeEventListener("mousedown", this.handleMouseDown);
     document.removeEventListener("click", this.hideContextMenu);
 
-    // 移除DOM元素
+    
     if (this.menuElement && this.menuElement.parentNode) {
       this.menuElement.parentNode.removeChild(this.menuElement);
     }
